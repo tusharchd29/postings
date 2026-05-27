@@ -867,11 +867,88 @@ function PMPostCard({p, onEdit, onDelete}) {
   );
 }
 
+function PlatformRow({pl, i, p, names, onMark}) {
+  const [ssFile, setSsFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [pasting, setPasting] = useState(false);
+  const pasteZoneRef = useRef(null);
+
+  function handleFile(file) {
+    if(!file || !file.type.startsWith("image/")) return;
+    setSsFile(file);
+    const reader = new FileReader();
+    reader.onload = e => setPreview(e.target.result);
+    reader.readAsDataURL(file);
+  }
+
+  function handlePaste(e) {
+    const items = e.clipboardData?.items;
+    if(!items) return;
+    for(const item of items) {
+      if(item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        if(file) { handleFile(file); break; }
+      }
+    }
+  }
+
+  function clearSS() { setSsFile(null); setPreview(null); }
+
+  const [atTime, ssLink] = pl.postedAt ? pl.postedAt.split(" | ") : ["",""];
+
+  return (
+    <div className={`check-row ${pl.posted?"done-row":""}`} style={{flexWrap:"wrap",alignItems:"flex-start",paddingBottom:ssFile&&preview?10:undefined}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,flex:1,minWidth:0,paddingTop:pl.posted?0:2}}>
+        <input type="checkbox" checked={pl.posted} disabled={pl.posted}
+          onChange={e=>e.target.checked&&onMark(p.id,pl.name,i,true,names[p.id]||"",p.client,ssFile)}
+          style={{width:16,height:16,flexShrink:0,accentColor:"#16A34A"}}/>
+        <i className={`ti ${PI[pl.name]||"ti-device-mobile"}`} style={{fontSize:16}}></i>
+        <span style={{fontSize:14}}>{pl.name}</span>
+      </div>
+      {pl.posted
+        ? <div style={{display:"flex",alignItems:"center",gap:6,marginLeft:"auto"}}>
+            <span className="posted-by-tag"><i className="ti ti-check" style={{fontSize:12}}></i>{pl.postedBy}</span>
+            {ssLink && <a href={ssLink} target="_blank" rel="noreferrer"
+              style={{fontSize:11,color:"#185FA5",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",border:"1px solid #BFDBFE",borderRadius:6,background:"#EBF4FF"}}>
+              <i className="ti ti-photo" style={{fontSize:12}}></i>SS
+            </a>}
+          </div>
+        : <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:5,flexShrink:0}}>
+            <div style={{display:"flex",gap:5,alignItems:"center"}}>
+              <label style={{cursor:"pointer",fontSize:11,color:"#185FA5",display:"flex",alignItems:"center",gap:3,padding:"3px 8px",border:"1px solid #BFDBFE",borderRadius:6,background:"#EBF4FF"}}>
+                <i className="ti ti-upload" style={{fontSize:12}}></i>Upload
+                <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>handleFile(e.target.files[0])}/>
+              </label>
+              <div ref={pasteZoneRef} tabIndex={0} onPaste={handlePaste}
+                onFocus={()=>setPasting(true)} onBlur={()=>setPasting(false)}
+                style={{fontSize:11,padding:"3px 8px",border:`1px solid ${pasting?"#185FA5":"#ddd"}`,borderRadius:6,
+                  background:pasting?"#EBF4FF":"#f9f9f9",color:pasting?"#185FA5":"#888",cursor:"pointer",
+                  display:"flex",alignItems:"center",gap:3,outline:"none"}}
+                title="Click here, then Ctrl+V to paste screenshot">
+                <i className="ti ti-clipboard" style={{fontSize:12}}></i>
+                {pasting?"Paste now (Ctrl+V)":"Click → Paste"}
+              </div>
+              {ssFile && <button onClick={clearSS}
+                style={{background:"none",border:"none",cursor:"pointer",color:"#DC2626",fontSize:13,padding:0,lineHeight:1}}
+                title="Remove screenshot"><i className="ti ti-x"></i></button>}
+            </div>
+            {preview && (
+              <div style={{marginTop:2}}>
+                <img src={preview} alt="screenshot preview"
+                  style={{height:60,width:"auto",maxWidth:130,borderRadius:6,border:"1px solid #e5e5e5",objectFit:"cover",display:"block"}}/>
+                <div style={{fontSize:10,color:"#16A34A",marginTop:2,display:"flex",alignItems:"center",gap:3}}>
+                  <i className="ti ti-circle-check" style={{fontSize:11}}></i>Ready to upload
+                </div>
+              </div>
+            )}
+          </div>}
+    </div>
+  );
+}
+
 function PostingCard({p, onMark}) {
   const s=getStatus(p);
   const [names, setNames] = useState({});
-  const [screenshots, setScreenshots] = useState({});
-  const fileRefs = {};
 
   return (
     <div className="post-card">
@@ -890,37 +967,9 @@ function PostingCard({p, onMark}) {
       {p.remarks&&<div className="remarks-box"><i className="ti ti-alert-triangle"></i><div className="remarks-txt">{p.remarks}</div></div>}
       <div className="divider"></div>
       <div className="sub-label">Mark as posted</div>
-      {p.platforms.map((pl,i)=>{
-        const ssKey = `${p.id}-${i}`;
-        const ssFile = screenshots[ssKey];
-        const [atTime, ssLink] = pl.postedAt ? pl.postedAt.split(" | ") : ["",""];
-        return (
-          <div key={pl.name} className={`check-row ${pl.posted?"done-row":""}`}>
-            <input type="checkbox" checked={pl.posted} disabled={pl.posted}
-              onChange={e=>e.target.checked&&onMark(p.id,pl.name,i,true,names[p.id]||"",p.client,ssFile)}/>
-            <label style={{display:"flex",alignItems:"center",gap:8,flex:1,margin:0,cursor:pl.posted?"default":"pointer"}}>
-              <i className={`ti ${PI[pl.name]||"ti-device-mobile"}`} style={{fontSize:16}}></i>
-              <span>{pl.name}</span>
-            </label>
-            {pl.posted
-              ? <div style={{display:"flex",alignItems:"center",gap:6,marginLeft:"auto"}}>
-                  <span className="posted-by-tag"><i className="ti ti-check" style={{fontSize:12}}></i>{pl.postedBy}</span>
-                  {ssLink && <a href={ssLink} target="_blank" rel="noreferrer" style={{fontSize:11,color:"#185FA5",display:"flex",alignItems:"center",gap:3}}><i className="ti ti-photo" style={{fontSize:12}}></i>SS</a>}
-                </div>
-              : <div style={{display:"flex",alignItems:"center",gap:6,marginLeft:"auto"}}>
-                  {ssFile
-                    ? <span style={{fontSize:11,color:"#16A34A",display:"flex",alignItems:"center",gap:3}}><i className="ti ti-photo" style={{fontSize:12}}></i>{ssFile.name.slice(0,12)}…</span>
-                    : null}
-                  <label style={{cursor:"pointer",fontSize:11,color:"#185FA5",display:"flex",alignItems:"center",gap:3,padding:"3px 8px",border:"1px solid #BFDBFE",borderRadius:6,background:"#EBF4FF"}}>
-                    <i className="ti ti-upload" style={{fontSize:12}}></i>
-                    {ssFile?"Change SS":"Add SS"}
-                    <input type="file" accept="image/*" style={{display:"none"}}
-                      onChange={e=>setScreenshots({...screenshots,[ssKey]:e.target.files[0]})}/>
-                  </label>
-                </div>}
-          </div>
-        );
-      })}
+      {p.platforms.map((pl,i)=>(
+        <PlatformRow key={pl.name} pl={pl} i={i} p={p} names={names} onMark={onMark}/>
+      ))}
       {s!=="done"&&(
         <div className="name-row">
           <label>Your name:</label>
