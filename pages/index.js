@@ -139,8 +139,14 @@ export default function Home() {
       const r = await fetch("/api/sow",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({sowPin:"11111",tracker:{clientId,month,made}})}).then(x=>x.json());
       if(!r.ok){ toast("Error: "+r.error); return; }
-      setSowRows(prev=>prev.map(row=>row.id===clientId?{...row,tracker:{...row.tracker,[month]:made}}:row));
-      toast("Creative count updated!");
+      setSowRows(prev=>prev.map(row=>{
+        if(row.id!==clientId) return row;
+        const newTracker = {...row.tracker};
+        if(made===null) { delete newTracker[month]; } // clear override
+        else { newTracker[month] = made; }
+        return {...row, tracker: newTracker};
+      }));
+      toast(made===null ? "Override cleared — using auto-count." : "Override saved!");
     } catch { toast("Failed to update tracker."); }
   }
 
@@ -618,14 +624,25 @@ export default function Home() {
               const active = sowRows.filter(r=>r.status==="Active");
               const totalRequired = active.reduce((s,r)=>{const n=parseInt(r.creativesRequired);return s+(isNaN(n)?0:n);},0);
               const curMonth = sowDateFrom || new Date().toISOString().slice(0,7);
-              const totalMade = active.reduce((s,r)=>s+(r.tracker[curMonth]||0),0);
+              // Build auto-count map: { clientName: count of fully-posted posts this month }
+              const autoCountMap = {};
+              posts.forEach(p => {
+                const pm = p.date ? p.date.slice(0,7) : "";
+                if(pm !== curMonth) return;
+                const allPosted = p.platforms.length>0 && p.platforms.every(pl=>pl.posted);
+                if(!allPosted) return;
+                autoCountMap[p.client] = (autoCountMap[p.client]||0) + 1;
+              });
+              // Effective made = manual override if set, else auto-count
+              const getEffective = (row) => row.tracker[curMonth] != null ? row.tracker[curMonth] : (autoCountMap[row.clientName]||0);
+              const totalMade = active.reduce((s,r)=>s+getEffective(r),0);
               const pct = totalRequired>0?Math.round(totalMade/totalRequired*100):0;
               return (
                 <div style={{display:"flex",gap:8,marginBottom:"1rem",flexWrap:"wrap",alignItems:"stretch"}}>
                   {[
                     {label:"Active clients",val:active.length,color:"#185FA5"},
                     {label:"Creatives required",val:totalRequired,color:"#1a1a1a"},
-                    {label:`Made (${curMonth})`,val:totalMade,color:totalMade>=totalRequired?"#16A34A":"#D97706"},
+                    {label:`Posted (${curMonth})`,val:totalMade,color:totalMade>=totalRequired?"#16A34A":"#D97706"},
                     {label:"Completion",val:`${pct}%`,color:pct>=100?"#16A34A":pct>=50?"#D97706":"#DC2626"},
                   ].map(s=>(
                     <div key={s.label} style={{background:"#fff",border:"1px solid #e5e5e5",borderRadius:8,padding:"8px 14px",textAlign:"center",flex:"1 0 70px"}}>
@@ -645,6 +662,16 @@ export default function Home() {
             {/* Table */}
             {sowLoading ? <div className="loading"><span className="spinner"></span>Loading SOW...</div> : (()=>{
               const curMonth = sowDateFrom || new Date().toISOString().slice(0,7);
+              // Auto-count: fully-posted posts this month per client
+              const autoCountMap = {};
+              posts.forEach(p => {
+                const pm = p.date ? p.date.slice(0,7) : "";
+                if(pm !== curMonth) return;
+                const allPosted = p.platforms.length>0 && p.platforms.every(pl=>pl.posted);
+                if(!allPosted) return;
+                autoCountMap[p.client] = (autoCountMap[p.client]||0) + 1;
+              });
+              const getEffective = (row) => row.tracker[curMonth] != null ? row.tracker[curMonth] : (autoCountMap[row.clientName]||0);
               const filtered = sowRows.filter(r=>{
                 if(sowFilterStatus && r.status!==sowFilterStatus) return false;
                 if(sowFilterPriority && r.priority!==sowFilterPriority) return false;
@@ -652,11 +679,12 @@ export default function Home() {
               });
               if(!filtered.length) return <div className="empty"><i className="ti ti-file-off"></i>No records match this filter.</div>;
               const totalReq = filtered.filter(r=>r.status==="Active").reduce((s,r)=>{const n=parseInt(r.creativesRequired);return s+(isNaN(n)?0:n);},0);
+              const totalEff = filtered.filter(r=>r.status==="Active").reduce((s,r)=>s+getEffective(r),0);
               return (
                 <div style={{background:"#fff",border:"1px solid #e5e5e5",borderRadius:12,overflow:"hidden"}}>
                   {/* Table header */}
-                  <div style={{display:"grid",gridTemplateColumns:"2fr 2.5fr 1fr 1fr 1fr 1.2fr",gap:0,background:"#185FA5",padding:"8px 14px",alignItems:"center"}}>
-                    {["Client Name","Service Type","Creatives Req.","Priority","Status",`Made — ${curMonth}`].map(h=>(
+                  <div style={{display:"grid",gridTemplateColumns:"2fr 2.5fr 1fr 1fr 1fr 1.6fr",gap:0,background:"#185FA5",padding:"8px 14px",alignItems:"center"}}>
+                    {["Client Name","Service Type","Creatives Req.","Priority","Status",`Posted / Override — ${curMonth}`].map(h=>(
                       <div key={h} style={{fontSize:11,fontWeight:600,color:"#fff",letterSpacing:".02em"}}>{h}</div>
                     ))}
                   </div>
@@ -668,17 +696,17 @@ export default function Home() {
                         <SOWEditForm row={sowEditRow} setRow={setSowEditRow} onSave={saveSowRow} onCancel={()=>setSowEditRow(null)} saving={sowSaving} isNew={false}/>
                       </div>
                     );
-                    return <SOWTableRow key={row.id} row={row} i={i} curMonth={curMonth} sowUnlocked={sowUnlocked} onEdit={()=>setSowEditRow({...row})} onDelete={()=>deleteSowRow(row.id,row.clientName)} onSaveTracker={saveTrackerVal}/>;
+                    return <SOWTableRow key={row.id} row={row} i={i} curMonth={curMonth} autoCount={autoCountMap[row.clientName]||0} sowUnlocked={sowUnlocked} onEdit={()=>setSowEditRow({...row})} onDelete={()=>deleteSowRow(row.id,row.clientName)} onSaveTracker={saveTrackerVal}/>;
                   })}
                   {/* Totals row */}
-                  <div style={{display:"grid",gridTemplateColumns:"2fr 2.5fr 1fr 1fr 1fr 1.2fr",gap:0,padding:"9px 14px",background:"#FFF9C4",borderTop:"2px solid #D97706",alignItems:"center"}}>
+                  <div style={{display:"grid",gridTemplateColumns:"2fr 2.5fr 1fr 1fr 1fr 1.6fr",gap:0,padding:"9px 14px",background:"#FFF9C4",borderTop:"2px solid #D97706",alignItems:"center"}}>
                     <div style={{fontWeight:700,fontSize:13,color:"#1a1a1a"}}>TOTALS</div>
                     <div></div>
                     <div style={{fontWeight:700,fontSize:13,color:"#1a1a1a"}}>{totalReq}</div>
                     <div></div><div></div>
                     <div style={{fontWeight:700,fontSize:13,color:"#1a1a1a"}}>
-                      {filtered.filter(r=>r.status==="Active").reduce((s,r)=>s+(r.tracker[curMonth]||0),0)}
-                      <span style={{fontSize:10,color:"#888",fontWeight:400,marginLeft:4}}>made</span>
+                      {totalEff}
+                      <span style={{fontSize:10,color:"#888",fontWeight:400,marginLeft:4}}>posted</span>
                     </div>
                   </div>
                 </div>
@@ -994,40 +1022,57 @@ const priStyle = {
   D:{background:"#FCE7F3",color:"#9D174D"},
 };
 
-function SOWTableRow({row, i, curMonth, sowUnlocked, onEdit, onDelete, onSaveTracker}) {
+function SOWTableRow({row, i, curMonth, autoCount, sowUnlocked, onEdit, onDelete, onSaveTracker}) {
   const [trackerEditing, setTrackerEditing] = useState(false);
-  const made = row.tracker[curMonth]||0;
-  const [trackerVal, setTrackerVal] = useState(String(made));
+  // null tracker means "not overridden — use auto"
+  const manualOverride = (row.tracker[curMonth] != null) ? row.tracker[curMonth] : null;
+  const effective = manualOverride != null ? manualOverride : autoCount;
+  const [trackerVal, setTrackerVal] = useState(String(effective));
   const req = parseInt(row.creativesRequired);
   const hasTarget = !isNaN(req) && req>0;
-  const over = hasTarget && made>=req;
+  const over = hasTarget && effective>=req;
+
   return (
-    <div style={{display:"grid",gridTemplateColumns:"2fr 2.5fr 1fr 1fr 1fr 1.2fr",gap:0,padding:"9px 14px",alignItems:"center",borderTop:i===0?"none":"1px solid #f0f0f0",background:i%2===0?"#fff":"#fafafa"}}>
+    <div style={{display:"grid",gridTemplateColumns:"2fr 2.5fr 1fr 1fr 1fr 1.6fr",gap:0,padding:"9px 14px",alignItems:"center",borderTop:i===0?"none":"1px solid #f0f0f0",background:i%2===0?"#fff":"#fafafa"}}>
       <div style={{fontWeight:500,fontSize:13,color:"#1a1a1a"}}>{row.clientName}</div>
       <div style={{fontSize:12,color:"#555"}}>{row.serviceType}</div>
       <div style={{fontSize:13,fontWeight:600,color:"#1a1a1a"}}>{row.creativesRequired}</div>
       <div><span style={{fontSize:11,fontWeight:600,padding:"2px 9px",borderRadius:20,...(priStyle[row.priority]||priStyle.D)}}>{row.priority}</span></div>
       <div><span style={{fontSize:11,padding:"2px 8px",borderRadius:20,background:row.status==="Active"?"#F0FDF4":"#f5f5f5",color:row.status==="Active"?"#166534":"#888"}}>{row.status}</span></div>
-      <div style={{display:"flex",alignItems:"center",gap:6}}>
+      <div style={{display:"flex",alignItems:"center",gap:4,flexWrap:"wrap"}}>
         {trackerEditing
-          ? <><input type="number" value={trackerVal} onChange={e=>setTrackerVal(e.target.value)} min="0"
-              style={{width:52,padding:"3px 6px",fontSize:12,border:"1px solid #185FA5",borderRadius:6,background:"#EBF4FF",color:"#0C447C"}}
-              autoFocus
-              onKeyDown={async e=>{if(e.key==="Enter"){await onSaveTracker(row.id,curMonth,parseInt(trackerVal)||0);setTrackerEditing(false);}if(e.key==="Escape")setTrackerEditing(false);}}/>
-            <button className="btn btn-sm btn-primary" style={{padding:"3px 7px",fontSize:11}} onClick={async()=>{await onSaveTracker(row.id,curMonth,parseInt(trackerVal)||0);setTrackerEditing(false);}}>✓</button>
-            <button className="btn btn-sm" style={{padding:"3px 7px",fontSize:11}} onClick={()=>setTrackerEditing(false)}>✕</button>
-          </>
-          : <><span style={{fontSize:13,fontWeight:600,color:over?"#16A34A":made>0?"#D97706":"#aaa",minWidth:22}}>{made}</span>
-            {hasTarget && <span style={{fontSize:10,color:"#aaa"}}>/ {req}</span>}
-            {hasTarget && <div style={{flex:1,height:4,background:"#f0f0f0",borderRadius:4,overflow:"hidden",minWidth:30}}>
-              <div style={{height:"100%",width:`${Math.min(100,Math.round(made/req*100))}%`,background:over?"#16A34A":made>0?"#D97706":"#e5e5e5",borderRadius:4}}></div>
-            </div>}
-            <button onClick={()=>{setTrackerVal(String(made));setTrackerEditing(true);}} style={{background:"none",border:"none",cursor:"pointer",color:"#aaa",padding:0,lineHeight:1}} title="Update count"><i className="ti ti-pencil" style={{fontSize:12}}></i></button>
-            {sowUnlocked && <>
-              <button className="btn btn-sm" style={{padding:"3px 7px",fontSize:11,marginLeft:2}} onClick={onEdit}><i className="ti ti-edit" style={{fontSize:10}}></i></button>
-              <button className="btn btn-sm btn-danger" style={{padding:"3px 7px",fontSize:11}} onClick={onDelete}><i className="ti ti-trash" style={{fontSize:10}}></i></button>
+          ? <>
+              <input type="number" value={trackerVal} onChange={e=>setTrackerVal(e.target.value)} min="0"
+                style={{width:48,padding:"3px 6px",fontSize:12,border:"1px solid #185FA5",borderRadius:6,background:"#EBF4FF",color:"#0C447C"}}
+                autoFocus
+                onKeyDown={async e=>{if(e.key==="Enter"){await onSaveTracker(row.id,curMonth,parseInt(trackerVal)||0);setTrackerEditing(false);}if(e.key==="Escape")setTrackerEditing(false);}}/>
+              <button className="btn btn-sm btn-primary" style={{padding:"3px 7px",fontSize:11}} onClick={async()=>{await onSaveTracker(row.id,curMonth,parseInt(trackerVal)||0);setTrackerEditing(false);}}>✓</button>
+              <button className="btn btn-sm" style={{padding:"3px 7px",fontSize:11}} onClick={()=>setTrackerEditing(false)}>✕</button>
+            </>
+          : <>
+              {/* Auto-count pill — blue, always visible */}
+              <span title="Auto: fully posted posts this month" style={{display:"inline-flex",alignItems:"center",gap:2,fontSize:11,padding:"2px 7px",borderRadius:20,background:"#EBF4FF",color:"#185FA5",fontWeight:600,border:"1px solid #BFDBFE",whiteSpace:"nowrap"}}>
+                <i className="ti ti-refresh" style={{fontSize:10}}></i>{autoCount}
+              </span>
+              {/* Manual override pill — amber, only if set */}
+              {manualOverride != null && (
+                <span title="Manual override (overrides auto)" style={{display:"inline-flex",alignItems:"center",gap:2,fontSize:11,padding:"2px 7px",borderRadius:20,background:"#FEF9C3",color:"#92400E",fontWeight:600,border:"1px solid #FDE68A",whiteSpace:"nowrap"}}>
+                  <i className="ti ti-pencil" style={{fontSize:10}}></i>{manualOverride}
+                  <button onClick={async()=>{await onSaveTracker(row.id,curMonth,null);}} title="Clear override — revert to auto" style={{background:"none",border:"none",cursor:"pointer",color:"#92400E",padding:"0 0 0 2px",lineHeight:1,fontSize:11}}>✕</button>
+                </span>
+              )}
+              {/* Progress bar */}
+              {hasTarget && <div style={{flex:1,height:4,background:"#f0f0f0",borderRadius:4,overflow:"hidden",minWidth:20}}>
+                <div style={{height:"100%",width:`${Math.min(100,Math.round(effective/req*100))}%`,background:over?"#16A34A":effective>0?"#D97706":"#e5e5e5",borderRadius:4}}></div>
+              </div>}
+              {hasTarget && <span style={{fontSize:10,color:"#aaa"}}>/{req}</span>}
+              {/* Set override button */}
+              <button onClick={()=>{setTrackerVal(String(effective));setTrackerEditing(true);}} style={{background:"none",border:"none",cursor:"pointer",color:"#aaa",padding:0,lineHeight:1}} title="Set manual override"><i className="ti ti-edit" style={{fontSize:11}}></i></button>
+              {sowUnlocked && <>
+                <button className="btn btn-sm" style={{padding:"3px 7px",fontSize:11}} onClick={onEdit}><i className="ti ti-settings" style={{fontSize:10}}></i></button>
+                <button className="btn btn-sm btn-danger" style={{padding:"3px 7px",fontSize:11}} onClick={onDelete}><i className="ti ti-trash" style={{fontSize:10}}></i></button>
+              </>}
             </>}
-          </>}
       </div>
     </div>
   );
