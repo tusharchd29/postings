@@ -86,9 +86,13 @@ export default function Home() {
   const [sowFilterPriority, setSowFilterPriority] = useState("");
   const [sowDateFrom, setSowDateFrom] = useState("");
   const [sowDateTo, setSowDateTo] = useState("");
-  const [sowEditRow, setSowEditRow] = useState(null); // row being edited
+  const [sowEditRow, setSowEditRow] = useState(null);
   const [sowSaving, setSowSaving] = useState(false);
   const [sowAddMode, setSowAddMode] = useState(false);
+
+  // ── Global date range filter (applies to Overview + Posting Team)
+  const [globalDateFrom, setGlobalDateFrom] = useState("");
+  const [globalDateTo, setGlobalDateTo] = useState("");
 
   // ── LOAD ──────────────────────────────────────────────────
   async function loadAll() {
@@ -243,17 +247,27 @@ export default function Home() {
   function showClientSuccess(m) { setClientSuccess(m); setTimeout(()=>setClientSuccess(""), 3000); }
 
   // ── MARK POSTED ───────────────────────────────────────────
-  async function markPlatform(postId, platName, platIdx, checked, name) {
+  async function markPlatform(postId, platName, platIdx, checked, name, clientName, screenshotFile) {
     if(!checked) return;
     const postedBy = name || "Unknown";
+    let screenshot = null;
+    if(screenshotFile) {
+      const data = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result.split(",")[1]);
+        reader.readAsDataURL(screenshotFile);
+      });
+      screenshot = { data, name: screenshotFile.name, mimeType: screenshotFile.type, clientName };
+    }
     try {
-      const r = await fetch("/api/mark-posted",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({postId,platformName:platName,postedBy})}).then(x=>x.json());
+      const r = await fetch("/api/mark-posted",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({postId,platformName:platName,postedBy,screenshot})}).then(x=>x.json());
       if(!r.ok){ toast("Error: "+r.error); return; }
       setPosts(posts.map(p=>{
         if(p.id.toString()!==postId.toString()) return p;
-        return {...p, platforms: p.platforms.map((pl,i)=> i===platIdx ? {...pl,posted:true,postedBy} : pl)};
+        return {...p, platforms: p.platforms.map((pl,i)=> i===platIdx ? {...pl,posted:true,postedBy,screenshotLink:r.screenshotLink} : pl)};
       }));
-      toast(`${platName} marked as posted!`);
+      toast(`${platName} marked as posted!${r.screenshotLink?" Screenshot saved.":""}`);
     } catch { toast("Failed to save. Try again."); }
   }
 
@@ -272,14 +286,23 @@ export default function Home() {
   async function saveEditPost() {
     if(!editPost.editClient||!editPost.editType||!editPost.editDate||!editPost.editTitle.trim()){ toast("Fill in client, type, date and title."); return; }
     if(!editSelPlats.length){ toast("Select at least one platform."); return; }
+    // Detect if date changed — show confirmation
+    const originalPost = posts.find(x=>x.id.toString()===editPost.id.toString());
+    const dateChanged = originalPost && originalPost.date !== editPost.editDate;
+    const hasPosted = originalPost && originalPost.platforms.some(pl=>pl.posted);
+    if(dateChanged && hasPosted) {
+      if(!confirm(`Date changed from ${originalPost.date} to ${editPost.editDate}.\n\nThis will reset ALL platforms back to pending — the posting team will need to repost everything.\n\nContinue?`)) return;
+    }
     setSaveEditLoading(true);
     try {
       const r = await fetch("/api/posts",{method:"PUT",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({id:editPost.id,client:editPost.editClient,type:editPost.editType,date:editPost.editDate,time:editPost.editTime,
-          title:editPost.editTitle.trim(),caption:editPost.editCaption.trim(),asset:editPost.editAsset.trim(),remarks:editPost.editRemarks.trim(),platforms:editSelPlats})
+          title:editPost.editTitle.trim(),caption:editPost.editCaption.trim(),asset:editPost.editAsset.trim(),remarks:editPost.editRemarks.trim(),
+          platforms:editSelPlats, resetPlatforms: dateChanged && hasPosted})
       }).then(x=>x.json());
       if(!r.ok){ toast("Error: "+r.error); setSaveEditLoading(false); return; }
-      toast("Post updated successfully!"); setEditModal(false); setSaveEditLoading(false);
+      toast(dateChanged && hasPosted ? "Post rescheduled — all platforms reset to pending!" : "Post updated successfully!");
+      setEditModal(false); setSaveEditLoading(false);
       await loadAll();
     } catch { toast("Failed to save."); setSaveEditLoading(false); }
   }
@@ -342,7 +365,9 @@ export default function Home() {
   if(role==="pm") {
     const filteredPosts = posts.filter(p=>
       (!pmFilterClient||p.client===pmFilterClient) &&
-      (!pmFilterStatus || (pmFilterStatus==="overdue"?getUrgency(p)==="overdue":pmFilterStatus==="today"?getUrgency(p)==="today":pmFilterStatus==="upcoming"?getUrgency(p)==="upcoming":pmFilterStatus==="done"?getStatus(p)==="done":true))
+      (!pmFilterStatus || (pmFilterStatus==="overdue"?getUrgency(p)==="overdue":pmFilterStatus==="today"?getUrgency(p)==="today":pmFilterStatus==="upcoming"?getUrgency(p)==="upcoming":pmFilterStatus==="done"?getStatus(p)==="done":true)) &&
+      (!globalDateFrom || p.date >= globalDateFrom) &&
+      (!globalDateTo || p.date <= globalDateTo)
     );
     const groups = [
       {key:"overdue",label:"Overdue",cls:"g-overdue",items:filteredPosts.filter(p=>getUrgency(p)==="overdue")},
@@ -406,6 +431,12 @@ export default function Home() {
                 <option value="upcoming">Upcoming</option>
                 <option value="done">All posted</option>
               </select>
+              <input type="date" value={globalDateFrom} onChange={e=>setGlobalDateFrom(e.target.value)}
+                style={{padding:"5px 8px",fontSize:12,border:"1px solid #ddd",borderRadius:7,background:"#fff",color:"#1a1a1a"}} title="From date"/>
+              <span style={{fontSize:12,color:"#888",alignSelf:"center"}}>→</span>
+              <input type="date" value={globalDateTo} onChange={e=>setGlobalDateTo(e.target.value)}
+                style={{padding:"5px 8px",fontSize:12,border:"1px solid #ddd",borderRadius:7,background:"#fff",color:"#1a1a1a"}} title="To date"/>
+              {(globalDateFrom||globalDateTo) && <button className="btn btn-sm" onClick={()=>{setGlobalDateFrom("");setGlobalDateTo("");}}>Clear</button>}
             </div>
             {loading ? <div className="loading"><span className="spinner"></span>Loading posts...</div> :
               groups.some(g=>g.items.length) ? groups.map(g=> g.items.length ? (
@@ -727,7 +758,12 @@ export default function Home() {
   // POSTING TEAM
   if(role==="posting") {
     const total=posts.length, dn=posts.filter(p=>getStatus(p)==="done").length, rem=posts.filter(p=>getStatus(p)!=="done").length;
-    const filtered = posts.filter(p=>(!postFilterClient||p.client===postFilterClient)&&(postFilterShow==="all"||getStatus(p)!=="done"));
+    const filtered = posts.filter(p=>
+      (!postFilterClient||p.client===postFilterClient) &&
+      (postFilterShow==="all"||getStatus(p)!=="done") &&
+      (!globalDateFrom || p.date >= globalDateFrom) &&
+      (!globalDateTo || p.date <= globalDateTo)
+    );
     return (
       <>
         <Head><title>Posting Team – Postings</title>
@@ -758,6 +794,12 @@ export default function Home() {
               <option value="pending">Pending only</option>
               <option value="all">All posts</option>
             </select>
+            <input type="date" value={globalDateFrom} onChange={e=>setGlobalDateFrom(e.target.value)}
+              style={{padding:"5px 8px",fontSize:12,border:"1px solid #ddd",borderRadius:7,background:"#fff",color:"#1a1a1a"}} title="From date"/>
+            <span style={{fontSize:12,color:"#888",alignSelf:"center"}}>→</span>
+            <input type="date" value={globalDateTo} onChange={e=>setGlobalDateTo(e.target.value)}
+              style={{padding:"5px 8px",fontSize:12,border:"1px solid #ddd",borderRadius:7,background:"#fff",color:"#1a1a1a"}} title="To date"/>
+            {(globalDateFrom||globalDateTo) && <button className="btn btn-sm" onClick={()=>{setGlobalDateFrom("");setGlobalDateTo("");}}>Clear</button>}
           </div>
           {loading ? <div className="loading"><span className="spinner"></span>Loading posts...</div> :
             filtered.length ? filtered.map(p=><PostingCard key={p.id} p={p} onMark={markPlatform}/>) :
@@ -798,17 +840,24 @@ function PMPostCard({p, onEdit, onDelete}) {
       </div>
       <div style={{marginTop:10}}>
         <div className="pm-detail-label" style={{marginBottom:6}}>Platform status</div>
-        {p.platforms.map(pl=>(
-          <div key={pl.name} className={`pm-plat-row ${pl.posted?"pm-plat-posted":"pm-plat-pending"}`}>
-            <div style={{display:"flex",alignItems:"center",gap:7,flex:1}}>
-              <i className={`ti ${PI[pl.name]||"ti-device-mobile"}`} style={{fontSize:15}}></i>
-              <span style={{fontSize:13,fontWeight:500}}>{pl.name}</span>
-            </div>
-            {pl.posted
-              ? <><span className="pm-posted-tag"><i className="ti ti-check" style={{fontSize:11}}></i> Posted by {pl.postedBy}</span>{pl.postedAt&&<span style={{fontSize:11,color:"#888",marginLeft:6}}>{pl.postedAt}</span>}</>
-              : <span className="pm-pending-tag">Not posted yet</span>}
+        {p.platforms.map(pl=>{
+        const [atTime, ssLink] = pl.postedAt ? pl.postedAt.split(" | ") : ["",""];
+        return (
+        <div key={pl.name} className={`pm-plat-row ${pl.posted?"pm-plat-posted":"pm-plat-pending"}`}>
+          <div style={{display:"flex",alignItems:"center",gap:7,flex:1}}>
+            <i className={`ti ${PI[pl.name]||"ti-device-mobile"}`} style={{fontSize:15}}></i>
+            <span style={{fontSize:13,fontWeight:500}}>{pl.name}</span>
           </div>
-        ))}
+          {pl.posted
+            ? <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <span className="pm-posted-tag"><i className="ti ti-check" style={{fontSize:11}}></i> Posted by {pl.postedBy}</span>
+                {atTime&&<span style={{fontSize:11,color:"#888"}}>{atTime}</span>}
+                {ssLink&&<a href={ssLink} target="_blank" rel="noreferrer" style={{fontSize:11,color:"#185FA5",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",border:"1px solid #BFDBFE",borderRadius:6,background:"#EBF4FF"}}><i className="ti ti-photo" style={{fontSize:12}}></i>Screenshot</a>}
+              </div>
+            : <span className="pm-pending-tag">Not posted yet</span>}
+        </div>
+        );
+      })}
       </div>
       <div className="post-card-actions">
         <button className="btn btn-sm" onClick={()=>onEdit(p.id)}><i className="ti ti-edit"></i> Edit post</button>
@@ -821,6 +870,9 @@ function PMPostCard({p, onEdit, onDelete}) {
 function PostingCard({p, onMark}) {
   const s=getStatus(p);
   const [names, setNames] = useState({});
+  const [screenshots, setScreenshots] = useState({});
+  const fileRefs = {};
+
   return (
     <div className="post-card">
       <div className="post-card-header" style={{marginBottom:10}}>
@@ -838,17 +890,37 @@ function PostingCard({p, onMark}) {
       {p.remarks&&<div className="remarks-box"><i className="ti ti-alert-triangle"></i><div className="remarks-txt">{p.remarks}</div></div>}
       <div className="divider"></div>
       <div className="sub-label">Mark as posted</div>
-      {p.platforms.map((pl,i)=>(
-        <div key={pl.name} className={`check-row ${pl.posted?"done-row":""}`}>
-          <input type="checkbox" checked={pl.posted} disabled={pl.posted}
-            onChange={e=>e.target.checked&&onMark(p.id,pl.name,i,true,names[p.id]||"")}/>
-          <label style={{display:"flex",alignItems:"center",gap:8,flex:1,margin:0,cursor:pl.posted?"default":"pointer"}}>
-            <i className={`ti ${PI[pl.name]||"ti-device-mobile"}`} style={{fontSize:16}}></i>
-            <span>{pl.name}</span>
-          </label>
-          {pl.posted&&<span className="posted-by-tag"><i className="ti ti-check" style={{fontSize:12}}></i>{pl.postedBy}</span>}
-        </div>
-      ))}
+      {p.platforms.map((pl,i)=>{
+        const ssKey = `${p.id}-${i}`;
+        const ssFile = screenshots[ssKey];
+        const [atTime, ssLink] = pl.postedAt ? pl.postedAt.split(" | ") : ["",""];
+        return (
+          <div key={pl.name} className={`check-row ${pl.posted?"done-row":""}`}>
+            <input type="checkbox" checked={pl.posted} disabled={pl.posted}
+              onChange={e=>e.target.checked&&onMark(p.id,pl.name,i,true,names[p.id]||"",p.client,ssFile)}/>
+            <label style={{display:"flex",alignItems:"center",gap:8,flex:1,margin:0,cursor:pl.posted?"default":"pointer"}}>
+              <i className={`ti ${PI[pl.name]||"ti-device-mobile"}`} style={{fontSize:16}}></i>
+              <span>{pl.name}</span>
+            </label>
+            {pl.posted
+              ? <div style={{display:"flex",alignItems:"center",gap:6,marginLeft:"auto"}}>
+                  <span className="posted-by-tag"><i className="ti ti-check" style={{fontSize:12}}></i>{pl.postedBy}</span>
+                  {ssLink && <a href={ssLink} target="_blank" rel="noreferrer" style={{fontSize:11,color:"#185FA5",display:"flex",alignItems:"center",gap:3}}><i className="ti ti-photo" style={{fontSize:12}}></i>SS</a>}
+                </div>
+              : <div style={{display:"flex",alignItems:"center",gap:6,marginLeft:"auto"}}>
+                  {ssFile
+                    ? <span style={{fontSize:11,color:"#16A34A",display:"flex",alignItems:"center",gap:3}}><i className="ti ti-photo" style={{fontSize:12}}></i>{ssFile.name.slice(0,12)}…</span>
+                    : null}
+                  <label style={{cursor:"pointer",fontSize:11,color:"#185FA5",display:"flex",alignItems:"center",gap:3,padding:"3px 8px",border:"1px solid #BFDBFE",borderRadius:6,background:"#EBF4FF"}}>
+                    <i className="ti ti-upload" style={{fontSize:12}}></i>
+                    {ssFile?"Change SS":"Add SS"}
+                    <input type="file" accept="image/*" style={{display:"none"}}
+                      onChange={e=>setScreenshots({...screenshots,[ssKey]:e.target.files[0]})}/>
+                  </label>
+                </div>}
+          </div>
+        );
+      })}
       {s!=="done"&&(
         <div className="name-row">
           <label>Your name:</label>
