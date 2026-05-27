@@ -11,7 +11,9 @@ export default async function handler(req, res) {
     if (screenshot && screenshot.data) {
       screenshotLink = await uploadScreenshot(
         screenshot.data,
-        screenshot.name || `${platformName}_${postId}_${Date.now()}.png`
+        screenshot.name || `${platformName}_${Date.now()}.png`,
+        postId,
+        platformName
       );
     }
 

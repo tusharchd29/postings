@@ -841,7 +841,9 @@ function PMPostCard({p, onEdit, onDelete}) {
       <div style={{marginTop:10}}>
         <div className="pm-detail-label" style={{marginBottom:6}}>Platform status</div>
         {p.platforms.map(pl=>{
-        const [atTime, ssLink] = pl.postedAt ? pl.postedAt.split(" | ") : ["",""];
+        const [atTime, ssRef] = pl.postedAt ? pl.postedAt.split(" | ") : ["",""];
+        const hasScreenshot = ssRef && ssRef.startsWith("ss:");
+        const [,ssPostId,ssPlatform] = hasScreenshot ? ssRef.split(":") : [];
         return (
         <div key={pl.name} className={`pm-plat-row ${pl.posted?"pm-plat-posted":"pm-plat-pending"}`}>
           <div style={{display:"flex",alignItems:"center",gap:7,flex:1}}>
@@ -852,7 +854,10 @@ function PMPostCard({p, onEdit, onDelete}) {
             ? <div style={{display:"flex",alignItems:"center",gap:8}}>
                 <span className="pm-posted-tag"><i className="ti ti-check" style={{fontSize:11}}></i> Posted by {pl.postedBy}</span>
                 {atTime&&<span style={{fontSize:11,color:"#888"}}>{atTime}</span>}
-                {ssLink&&<a href={ssLink} target="_blank" rel="noreferrer" style={{fontSize:11,color:"#185FA5",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",border:"1px solid #BFDBFE",borderRadius:6,background:"#EBF4FF"}}><i className="ti ti-photo" style={{fontSize:12}}></i>Screenshot</a>}
+                {hasScreenshot&&<a href={`/api/screenshot?postId=${ssPostId}&platform=${encodeURIComponent(ssPlatform)}`} target="_blank" rel="noreferrer"
+                  style={{fontSize:11,color:"#185FA5",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",border:"1px solid #BFDBFE",borderRadius:6,background:"#EBF4FF"}}>
+                  <i className="ti ti-photo" style={{fontSize:12}}></i>Screenshot
+                </a>}
               </div>
             : <span className="pm-pending-tag">Not posted yet</span>}
         </div>
@@ -894,7 +899,9 @@ function PlatformRow({pl, i, p, names, onMark}) {
 
   function clearSS() { setSsFile(null); setPreview(null); }
 
-  const [atTime, ssLink] = pl.postedAt ? pl.postedAt.split(" | ") : ["",""];
+  const [atTime, ssRef] = pl.postedAt ? pl.postedAt.split(" | ") : ["",""];
+  const hasScreenshot = ssRef && ssRef.startsWith("ss:");
+  const [,ssPostId,ssPlatform] = hasScreenshot ? ssRef.split(":") : [];
 
   return (
     <div className={`check-row ${pl.posted?"done-row":""}`} style={{flexWrap:"wrap",alignItems:"flex-start",paddingBottom:ssFile&&preview?10:undefined}}>
@@ -908,7 +915,7 @@ function PlatformRow({pl, i, p, names, onMark}) {
       {pl.posted
         ? <div style={{display:"flex",alignItems:"center",gap:6,marginLeft:"auto"}}>
             <span className="posted-by-tag"><i className="ti ti-check" style={{fontSize:12}}></i>{pl.postedBy}</span>
-            {ssLink && <a href={ssLink} target="_blank" rel="noreferrer"
+            {hasScreenshot && <a href={`/api/screenshot?postId=${ssPostId}&platform=${encodeURIComponent(ssPlatform)}`} target="_blank" rel="noreferrer"
               style={{fontSize:11,color:"#185FA5",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",border:"1px solid #BFDBFE",borderRadius:6,background:"#EBF4FF"}}>
               <i className="ti ti-photo" style={{fontSize:12}}></i>SS
             </a>}
