@@ -537,8 +537,6 @@ export default function Home() {
           </div>
         )}
 
-        )}
-
         {/* SOW TAB */}
         {activeTab==="sow" && (
           <div className="content">
@@ -622,13 +620,6 @@ export default function Home() {
                 return true;
               });
               if(!filtered.length) return <div className="empty"><i className="ti ti-file-off"></i>No records match this filter.</div>;
-              const priColors = {A:{bg:"#DCFCE7",color:"#166534"},B:"#BFDBFE|#1E40AF",C:{bg:"#FEF9C3",color:"#854D0E"},D:{bg:"#FCE7F3",color:"#9D174D"}};
-              const priStyle = {
-                A:{background:"#DCFCE7",color:"#166534"},
-                B:{background:"#BFDBFE",color:"#1E40AF"},
-                C:{background:"#FEF9C3",color:"#854D0E"},
-                D:{background:"#FCE7F3",color:"#9D174D"},
-              };
               const totalReq = filtered.filter(r=>r.status==="Active").reduce((s,r)=>{const n=parseInt(r.creativesRequired);return s+(isNaN(n)?0:n);},0);
               return (
                 <div style={{background:"#fff",border:"1px solid #e5e5e5",borderRadius:12,overflow:"hidden"}}>
@@ -646,39 +637,7 @@ export default function Home() {
                         <SOWEditForm row={sowEditRow} setRow={setSowEditRow} onSave={saveSowRow} onCancel={()=>setSowEditRow(null)} saving={sowSaving} isNew={false}/>
                       </div>
                     );
-                    const made = row.tracker[curMonth]||0;
-                    const req = parseInt(row.creativesRequired);
-                    const hasTarget = !isNaN(req) && req>0;
-                    const over = hasTarget && made>=req;
-                    const [trackerEditing, setTrackerEditing] = useState(false);
-                    const [trackerVal, setTrackerVal] = useState(String(made));
-                    return (
-                      <div key={row.id} style={{display:"grid",gridTemplateColumns:"2fr 2.5fr 1fr 1fr 1fr 1.2fr",gap:0,padding:"9px 14px",alignItems:"center",borderTop:i===0?"none":"1px solid #f0f0f0",background:i%2===0?"#fff":"#fafafa"}}>
-                        <div style={{fontWeight:500,fontSize:13}}>{row.clientName}</div>
-                        <div style={{fontSize:12,color:"#555"}}>{row.serviceType}</div>
-                        <div style={{fontSize:13,fontWeight:600,color:"#1a1a1a"}}>{row.creativesRequired}</div>
-                        <div><span style={{fontSize:11,fontWeight:600,padding:"2px 9px",borderRadius:20,...(priStyle[row.priority]||priStyle.D)}}>{row.priority}</span></div>
-                        <div><span style={{fontSize:11,padding:"2px 8px",borderRadius:20,background:row.status==="Active"?"#F0FDF4":"#f5f5f5",color:row.status==="Active"?"#166534":"#888"}}>{row.status}</span></div>
-                        <div style={{display:"flex",alignItems:"center",gap:6}}>
-                          {trackerEditing
-                            ? <><input type="number" value={trackerVal} onChange={e=>setTrackerVal(e.target.value)} min="0"
-                                style={{width:52,padding:"3px 6px",fontSize:12,border:"1px solid #185FA5",borderRadius:6,background:"#EBF4FF"}}
-                                onKeyDown={async e=>{if(e.key==="Enter"){await saveTrackerVal(row.id,curMonth,parseInt(trackerVal)||0);setTrackerEditing(false);}if(e.key==="Escape")setTrackerEditing(false);}}/> 
-                              <button className="btn btn-sm btn-primary" style={{padding:"3px 7px",fontSize:11}} onClick={async()=>{await saveTrackerVal(row.id,curMonth,parseInt(trackerVal)||0);setTrackerEditing(false);}}>✓</button>
-                              <button className="btn btn-sm" style={{padding:"3px 7px",fontSize:11}} onClick={()=>setTrackerEditing(false)}>✕</button>
-                            </>
-                            : <><span style={{fontSize:13,fontWeight:600,color:over?"#16A34A":made>0?"#D97706":"#aaa",minWidth:22}}>{made}</span>
-                              {hasTarget && <span style={{fontSize:10,color:"#aaa"}}>/ {req}</span>}
-                              {hasTarget && <div style={{flex:1,height:4,background:"#f0f0f0",borderRadius:4,overflow:"hidden",minWidth:30}}>
-                                <div style={{height:"100%",width:`${Math.min(100,Math.round(made/req*100))}%`,background:over?"#16A34A":made>0?"#D97706":"#e5e5e5",borderRadius:4}}></div>
-                              </div>}
-                              <button onClick={()=>{setTrackerVal(String(made));setTrackerEditing(true);}} style={{background:"none",border:"none",cursor:"pointer",color:"#aaa",padding:0,fontSize:13,lineHeight:1}} title="Update count"><i className="ti ti-pencil" style={{fontSize:12}}></i></button>
-                              {sowUnlocked && <><button className="btn btn-sm" style={{padding:"3px 7px",fontSize:11,marginLeft:2}} onClick={()=>setSowEditRow({...row})}><i className="ti ti-edit" style={{fontSize:10}}></i></button>
-                              <button className="btn btn-sm btn-danger" style={{padding:"3px 7px",fontSize:11}} onClick={()=>deleteSowRow(row.id,row.clientName)}><i className="ti ti-trash" style={{fontSize:10}}></i></button></>}
-                            </>}
-                        </div>
-                      </div>
-                    );
+                    return <SOWTableRow key={row.id} row={row} i={i} curMonth={curMonth} sowUnlocked={sowUnlocked} onEdit={()=>setSowEditRow({...row})} onDelete={()=>deleteSowRow(row.id,row.clientName)} onSaveTracker={saveTrackerVal}/>;
                   })}
                   {/* Totals row */}
                   <div style={{display:"grid",gridTemplateColumns:"2fr 2.5fr 1fr 1fr 1fr 1.2fr",gap:0,padding:"9px 14px",background:"#FFF9C4",borderTop:"2px solid #D97706",alignItems:"center"}}>
@@ -896,6 +855,52 @@ function PostingCard({p, onMark}) {
           <input type="text" value={names[p.id]||""} onChange={e=>setNames({...names,[p.id]:e.target.value})} placeholder="Enter your name before checking off"/>
         </div>
       )}
+    </div>
+  );
+}
+
+const priStyle = {
+  A:{background:"#DCFCE7",color:"#166534"},
+  B:{background:"#BFDBFE",color:"#1E40AF"},
+  C:{background:"#FEF9C3",color:"#854D0E"},
+  D:{background:"#FCE7F3",color:"#9D174D"},
+};
+
+function SOWTableRow({row, i, curMonth, sowUnlocked, onEdit, onDelete, onSaveTracker}) {
+  const [trackerEditing, setTrackerEditing] = useState(false);
+  const made = row.tracker[curMonth]||0;
+  const [trackerVal, setTrackerVal] = useState(String(made));
+  const req = parseInt(row.creativesRequired);
+  const hasTarget = !isNaN(req) && req>0;
+  const over = hasTarget && made>=req;
+  return (
+    <div style={{display:"grid",gridTemplateColumns:"2fr 2.5fr 1fr 1fr 1fr 1.2fr",gap:0,padding:"9px 14px",alignItems:"center",borderTop:i===0?"none":"1px solid #f0f0f0",background:i%2===0?"#fff":"#fafafa"}}>
+      <div style={{fontWeight:500,fontSize:13,color:"#1a1a1a"}}>{row.clientName}</div>
+      <div style={{fontSize:12,color:"#555"}}>{row.serviceType}</div>
+      <div style={{fontSize:13,fontWeight:600,color:"#1a1a1a"}}>{row.creativesRequired}</div>
+      <div><span style={{fontSize:11,fontWeight:600,padding:"2px 9px",borderRadius:20,...(priStyle[row.priority]||priStyle.D)}}>{row.priority}</span></div>
+      <div><span style={{fontSize:11,padding:"2px 8px",borderRadius:20,background:row.status==="Active"?"#F0FDF4":"#f5f5f5",color:row.status==="Active"?"#166534":"#888"}}>{row.status}</span></div>
+      <div style={{display:"flex",alignItems:"center",gap:6}}>
+        {trackerEditing
+          ? <><input type="number" value={trackerVal} onChange={e=>setTrackerVal(e.target.value)} min="0"
+              style={{width:52,padding:"3px 6px",fontSize:12,border:"1px solid #185FA5",borderRadius:6,background:"#EBF4FF",color:"#0C447C"}}
+              autoFocus
+              onKeyDown={async e=>{if(e.key==="Enter"){await onSaveTracker(row.id,curMonth,parseInt(trackerVal)||0);setTrackerEditing(false);}if(e.key==="Escape")setTrackerEditing(false);}}/>
+            <button className="btn btn-sm btn-primary" style={{padding:"3px 7px",fontSize:11}} onClick={async()=>{await onSaveTracker(row.id,curMonth,parseInt(trackerVal)||0);setTrackerEditing(false);}}>✓</button>
+            <button className="btn btn-sm" style={{padding:"3px 7px",fontSize:11}} onClick={()=>setTrackerEditing(false)}>✕</button>
+          </>
+          : <><span style={{fontSize:13,fontWeight:600,color:over?"#16A34A":made>0?"#D97706":"#aaa",minWidth:22}}>{made}</span>
+            {hasTarget && <span style={{fontSize:10,color:"#aaa"}}>/ {req}</span>}
+            {hasTarget && <div style={{flex:1,height:4,background:"#f0f0f0",borderRadius:4,overflow:"hidden",minWidth:30}}>
+              <div style={{height:"100%",width:`${Math.min(100,Math.round(made/req*100))}%`,background:over?"#16A34A":made>0?"#D97706":"#e5e5e5",borderRadius:4}}></div>
+            </div>}
+            <button onClick={()=>{setTrackerVal(String(made));setTrackerEditing(true);}} style={{background:"none",border:"none",cursor:"pointer",color:"#aaa",padding:0,lineHeight:1}} title="Update count"><i className="ti ti-pencil" style={{fontSize:12}}></i></button>
+            {sowUnlocked && <>
+              <button className="btn btn-sm" style={{padding:"3px 7px",fontSize:11,marginLeft:2}} onClick={onEdit}><i className="ti ti-edit" style={{fontSize:10}}></i></button>
+              <button className="btn btn-sm btn-danger" style={{padding:"3px 7px",fontSize:11}} onClick={onDelete}><i className="ti ti-trash" style={{fontSize:10}}></i></button>
+            </>}
+          </>}
+      </div>
     </div>
   );
 }
