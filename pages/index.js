@@ -435,15 +435,11 @@ export default function Home() {
             </div>
           ))}
         </div>
-
-        {/* OVERVIEW */}
         {activeTab==="overview" && (
           <div className="content">
-            {/* Alerts */}
             {ov>0 && <div className="alert alert-red"><i className="ti ti-alert-circle"></i><span><strong>{ov} post{ov>1?"s are":" is"} overdue</strong> — scheduled time has passed and not fully posted.</span></div>}
             {td>0 && <div className="alert alert-amber"><i className="ti ti-clock"></i><span><strong>{td} post{td>1?"s":""} due today</strong> — keep an eye on these.</span></div>}
             {!ov&&!td && <div className="alert alert-green"><i className="ti ti-circle-check"></i><span>All clear — no overdue or pending posts for today.</span></div>}
-            {/* Stats */}
             <div className="stats-grid">
               <div className="stat-card"><div className="stat-num" style={{color:"#DC2626"}}>{ov}</div><div className="stat-label">Overdue</div></div>
               <div className="stat-card"><div className="stat-num" style={{color:"#D97706"}}>{td}</div><div className="stat-label">Due today</div></div>
@@ -483,8 +479,6 @@ export default function Home() {
             }
           </div>
         )}
-
-        {/* NEW POST */}
         {activeTab==="new" && (
           <div className="content">
             <div className="section-title">Create new post</div>
@@ -531,8 +525,6 @@ export default function Home() {
             </div>
           </div>
         )}
-
-        {/* CLIENTS */}
         {activeTab==="clients" && (
           <div className="content">
             {clientSuccess && <div className="success-banner" style={{display:"block"}}>{clientSuccess}</div>}
@@ -598,11 +590,8 @@ export default function Home() {
             }
           </div>
         )}
-
-        {/* SOW TAB */}
         {activeTab==="sow" && (
           <div className="content">
-            {/* Header row */}
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"1rem",flexWrap:"wrap",gap:8}}>
               <div style={{display:"flex",alignItems:"center",gap:8}}>
                 <i className="ti ti-file-text" style={{fontSize:16,color:"#185FA5"}}></i>
@@ -624,8 +613,6 @@ export default function Home() {
                     <button className="btn btn-sm" onClick={()=>setSowUnlocked(false)}><i className="ti ti-lock"></i> Lock</button>
                   </div>}
             </div>
-
-            {/* Filters */}
             <div className="filter-row">
               <select value={sowFilterStatus} onChange={e=>setSowFilterStatus(e.target.value)}>
                 <option value="">All statuses</option>
@@ -643,8 +630,6 @@ export default function Home() {
                 {sowDateFrom && <button className="btn btn-sm" onClick={()=>setSowDateFrom("")}>Clear</button>}
               </div>
             </div>
-
-            {/* Summary stats */}
             {sowRows.length>0 && (()=>{
               const active = sowRows.filter(r=>r.status==="Active");
               const totalRequired = active.reduce((s,r)=>{const n=parseInt(r.creativesRequired);return s+(isNaN(n)?0:n);},0);
@@ -678,13 +663,9 @@ export default function Home() {
                 </div>
               );
             })()}
-
-            {/* Add form */}
             {sowAddMode && sowEditRow && (
               <SOWEditForm row={sowEditRow} setRow={setSowEditRow} onSave={saveSowRow} onCancel={()=>{setSowAddMode(false);setSowEditRow(null);}} saving={sowSaving} isNew={true}/>
             )}
-
-            {/* Table */}
             {sowLoading ? <div className="loading"><span className="spinner"></span>Loading SOW...</div> : (()=>{
               const curMonth = sowDateFrom || new Date().toISOString().slice(0,7);
               // Auto-count: fully-posted posts this month per client
@@ -707,13 +688,11 @@ export default function Home() {
               const totalEff = filtered.filter(r=>r.status==="Active").reduce((s,r)=>s+getEffective(r),0);
               return (
                 <div style={{background:"#fff",border:"1px solid #e5e5e5",borderRadius:12,overflow:"hidden"}}>
-                  {/* Table header */}
                   <div style={{display:"grid",gridTemplateColumns:"2fr 2.5fr 1fr 1fr 1fr 1.6fr",gap:0,background:"#185FA5",padding:"8px 14px",alignItems:"center"}}>
                     {["Client Name","Service Type","Creatives Req.","Priority","Status",`Posted / Override — ${curMonth}`].map(h=>(
                       <div key={h} style={{fontSize:11,fontWeight:600,color:"#fff",letterSpacing:".02em"}}>{h}</div>
                     ))}
                   </div>
-                  {/* Rows */}
                   {filtered.map((row,i)=>{
                     const isEditing = sowUnlocked && sowEditRow?.id===row.id && !sowAddMode;
                     if(isEditing) return (
@@ -723,7 +702,6 @@ export default function Home() {
                     );
                     return <SOWTableRow key={row.id} row={row} i={i} curMonth={curMonth} autoCount={autoCountMap[row.clientName]||0} sowUnlocked={sowUnlocked} onEdit={()=>setSowEditRow({...row})} onDelete={()=>deleteSowRow(row.id,row.clientName)} onSaveTracker={saveTrackerVal}/>;
                   })}
-                  {/* Totals row */}
                   <div style={{display:"grid",gridTemplateColumns:"2fr 2.5fr 1fr 1fr 1fr 1.6fr",gap:0,padding:"9px 14px",background:"#FFF9C4",borderTop:"2px solid #D97706",alignItems:"center"}}>
                     <div style={{fontWeight:700,fontSize:13,color:"#1a1a1a"}}>TOTALS</div>
                     <div></div>
@@ -739,8 +717,6 @@ export default function Home() {
             })()}
           </div>
         )}
-
-        {/* EDIT MODAL */}
         {editModal && editPost && (
           <div className="modal-overlay open" onClick={e=>e.target===e.currentTarget&&setEditModal(false)}>
             <div className="modal">
@@ -1079,23 +1055,19 @@ function SOWTableRow({row, i, curMonth, autoCount, sowUnlocked, onEdit, onDelete
               <button className="btn btn-sm" style={{padding:"3px 7px",fontSize:11}} onClick={()=>setTrackerEditing(false)}>✕</button>
             </>
           : <>
-              {/* Auto-count pill — blue, always visible */}
               <span title="Auto: fully posted posts this month" style={{display:"inline-flex",alignItems:"center",gap:2,fontSize:11,padding:"2px 7px",borderRadius:20,background:"#EBF4FF",color:"#185FA5",fontWeight:600,border:"1px solid #BFDBFE",whiteSpace:"nowrap"}}>
                 <i className="ti ti-refresh" style={{fontSize:10}}></i>{autoCount}
               </span>
-              {/* Manual override pill — amber, only if set */}
               {manualOverride != null && (
                 <span title="Manual override (overrides auto)" style={{display:"inline-flex",alignItems:"center",gap:2,fontSize:11,padding:"2px 7px",borderRadius:20,background:"#FEF9C3",color:"#92400E",fontWeight:600,border:"1px solid #FDE68A",whiteSpace:"nowrap"}}>
                   <i className="ti ti-pencil" style={{fontSize:10}}></i>{manualOverride}
                   <button onClick={async()=>{await onSaveTracker(row.id,curMonth,null);}} title="Clear override — revert to auto" style={{background:"none",border:"none",cursor:"pointer",color:"#92400E",padding:"0 0 0 2px",lineHeight:1,fontSize:11}}>✕</button>
                 </span>
               )}
-              {/* Progress bar */}
               {hasTarget && <div style={{flex:1,height:4,background:"#f0f0f0",borderRadius:4,overflow:"hidden",minWidth:20}}>
                 <div style={{height:"100%",width:`${Math.min(100,Math.round(effective/req*100))}%`,background:over?"#16A34A":effective>0?"#D97706":"#e5e5e5",borderRadius:4}}></div>
               </div>}
               {hasTarget && <span style={{fontSize:10,color:"#aaa"}}>/{req}</span>}
-              {/* Set override button */}
               <button onClick={()=>{setTrackerVal(String(effective));setTrackerEditing(true);}} style={{background:"none",border:"none",cursor:"pointer",color:"#aaa",padding:0,lineHeight:1}} title="Set manual override"><i className="ti ti-edit" style={{fontSize:11}}></i></button>
               {sowUnlocked && <>
                 <button className="btn btn-sm" style={{padding:"3px 7px",fontSize:11}} onClick={onEdit}><i className="ti ti-settings" style={{fontSize:10}}></i></button>
@@ -1152,8 +1124,8 @@ function getDayOfYear() {
 
 
 function PmScreenshotUpload({postId, platName, onDone}) {
-  const [loading, setLoading] = React.useState(false);
-  const inputRef = React.useRef(null);
+  const [loading, setLoading] = useState(false);
+  const inputRef = useRef(null);
 
   async function handleFile(file) {
     if(!file || !file.type.startsWith("image/")) return;
@@ -1210,10 +1182,8 @@ function BgBotanical() {
   return (
     <div className="bg-botanical">
       <svg width="100%" height="100%" viewBox="0 0 1440 900" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-        {/* Faded merakiads watermark center */}
         <text x="720" y="480" textAnchor="middle" fontFamily="Dancing Script,cursive" fontSize="160" fontWeight="600" fill="#7DC242" opacity="0.12" transform="rotate(-15 720 480)">meraki</text>
         <text x="720" y="630" textAnchor="middle" fontFamily="Dancing Script,cursive" fontSize="160" fontWeight="600" fill="#29ABE2" opacity="0.12" transform="rotate(-15 720 630)">ads</text>
-        {/* Top left cluster */}
         <path d="M -10 120 Q 20 70 70 50 Q 60 90 -10 120 Z" fill="#C5E89A" opacity="0.5"/>
         <path d="M -10 120 Q 40 80 70 50" stroke="#7DC242" strokeWidth="1" fill="none" opacity="0.4"/>
         <path d="M 20 150 Q 55 90 100 75 Q 85 115 20 150 Z" fill="#97C459" opacity="0.38"/>
@@ -1223,7 +1193,6 @@ function BgBotanical() {
         <circle cx="55" cy="38" r="3" fill="#7DC242" opacity="0.5"/>
         <ellipse cx="48" cy="31" rx="5" ry="3" fill="#A8DCF0" opacity="0.4" transform="rotate(-30 48 31)"/>
         <ellipse cx="62" cy="31" rx="5" ry="3" fill="#A8DCF0" opacity="0.4" transform="rotate(30 62 31)"/>
-        {/* Top right cluster */}
         <path d="M 1450 80 Q 1410 40 1370 30 Q 1375 65 1450 80 Z" fill="#C5E89A" opacity="0.5"/>
         <path d="M 1450 80 Q 1400 48 1370 30" stroke="#7DC242" strokeWidth="1" fill="none" opacity="0.4"/>
         <path d="M 1430 120 Q 1385 75 1345 65 Q 1355 100 1430 120 Z" fill="#97C459" opacity="0.38"/>
@@ -1233,7 +1202,6 @@ function BgBotanical() {
         <circle cx="1378" cy="20" r="3" fill="#EF9F27" opacity="0.5"/>
         <ellipse cx="1371" cy="13" rx="5" ry="3" fill="#FAC775" opacity="0.4" transform="rotate(-30 1371 13)"/>
         <ellipse cx="1385" cy="13" rx="5" ry="3" fill="#FAC775" opacity="0.4" transform="rotate(30 1385 13)"/>
-        {/* Bottom left cluster */}
         <path d="M -10 820 Q 30 770 80 755 Q 70 795 -10 820 Z" fill="#C5E89A" opacity="0.45"/>
         <path d="M -10 820 Q 45 778 80 755" stroke="#7DC242" strokeWidth="1" fill="none" opacity="0.38"/>
         <path d="M 25 850 Q 65 795 110 785 Q 95 825 25 850 Z" fill="#97C459" opacity="0.35"/>
@@ -1241,26 +1209,22 @@ function BgBotanical() {
         <path d="M 42 870 Q 50 815 58 748" stroke="#639922" strokeWidth="1.2" fill="none" opacity="0.32" strokeLinecap="round"/>
         <circle cx="58" cy="740" r="5" fill="#29ABE2" opacity="0.35"/>
         <circle cx="58" cy="740" r="3" fill="#7DC242" opacity="0.48"/>
-        {/* Bottom right cluster */}
         <path d="M 1450 830 Q 1405 785 1365 775 Q 1372 808 1450 830 Z" fill="#C5E89A" opacity="0.45"/>
         <path d="M 1450 830 Q 1400 790 1365 775" stroke="#7DC242" strokeWidth="1" fill="none" opacity="0.38"/>
         <path d="M 1435 870 Q 1388 820 1350 812 Q 1360 845 1435 870 Z" fill="#97C459" opacity="0.35"/>
         <path d="M 1388 888 Q 1382 835 1372 768" stroke="#639922" strokeWidth="1.2" fill="none" opacity="0.32" strokeLinecap="round"/>
         <circle cx="1372" cy="760" r="5" fill="#FAC775" opacity="0.42"/>
         <circle cx="1372" cy="760" r="3" fill="#EF9F27" opacity="0.48"/>
-        {/* Mid left sprig */}
         <path d="M -5 430 Q 28 390 65 378 Q 55 412 -5 430 Z" fill="#C0DD97" opacity="0.35"/>
         <path d="M -5 430 Q 35 398 65 378" stroke="#7DC242" strokeWidth="0.8" fill="none" opacity="0.3"/>
         <path d="M 15 460 Q 50 418 88 408 Q 75 442 15 460 Z" fill="#97C459" opacity="0.28"/>
         <circle cx="72" cy="370" r="4" fill="#29ABE2" opacity="0.32"/>
         <circle cx="72" cy="370" r="2.5" fill="#7DC242" opacity="0.42"/>
-        {/* Mid right sprig */}
         <path d="M 1445 400 Q 1412 362 1375 352 Q 1382 385 1445 400 Z" fill="#C0DD97" opacity="0.35"/>
         <path d="M 1445 400 Q 1400 368 1375 352" stroke="#7DC242" strokeWidth="0.8" fill="none" opacity="0.3"/>
         <path d="M 1425 440 Q 1390 400 1352 392 Q 1362 425 1425 440 Z" fill="#97C459" opacity="0.28"/>
         <circle cx="1368" cy="344" r="4" fill="#FAC775" opacity="0.38"/>
         <circle cx="1368" cy="344" r="2.5" fill="#EF9F27" opacity="0.45"/>
-        {/* Scattered dots */}
         <circle cx="200" cy="150" r="2.5" fill="#7DC242" opacity="0.2"/>
         <circle cx="350" cy="80" r="2" fill="#29ABE2" opacity="0.18"/>
         <circle cx="520" cy="200" r="3" fill="#97C459" opacity="0.18"/>
@@ -1272,7 +1236,6 @@ function BgBotanical() {
         <circle cx="700" cy="850" r="3" fill="#97C459" opacity="0.18"/>
         <circle cx="1050" cy="780" r="2.5" fill="#FAC775" opacity="0.2"/>
         <circle cx="1300" cy="720" r="2" fill="#29ABE2" opacity="0.18"/>
-        {/* Small sprigs scattered */}
         <path d="M 300 250 Q 290 225 305 210 Q 315 228 300 250 Z" fill="#C5E89A" opacity="0.3"/>
         <path d="M 315 248 Q 328 223 312 210 Q 304 228 315 248 Z" fill="#C0DD97" opacity="0.28"/>
         <path d="M 307 255 Q 308 232 308 205" stroke="#7DC242" strokeWidth="0.7" fill="none" opacity="0.28" strokeLinecap="round"/>
