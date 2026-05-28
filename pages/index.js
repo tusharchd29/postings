@@ -357,13 +357,12 @@ export default function Home() {
         <title>Postings</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600&family=Cormorant+Garamond:ital,wght@1,400&display=swap"/>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600&family=Cormorant+Garamond:ital,wght@1,400&display=swap"/>
       </Head>
       <style>{globalCSS}</style>
       <div className="login-wrap">
         <QuoteCard/>
         <div className="login-card">
-          <div className="login-logo"><div className="logo-text"><span className="lm">meraki</span><span className="la">ads</span></div></div>
+          <div className="login-logo"><span className="logo-text"><span className="lm">meraki</span><span className="la">ads</span></span></div>
           <p className="login-sub">Posting Dashboard</p>
           <div className="role-grid">
             <div className={`role-btn ${selectedRole==="pm"?"selected":""}`} onClick={()=>setSelectedRole("pm")}>
@@ -414,13 +413,12 @@ export default function Home() {
       <>
         <Head><title>PM Dashboard – Postings</title>
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600&family=Cormorant+Garamond:ital,wght@1,400&display=swap"/>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600&family=Cormorant+Garamond:ital,wght@1,400&display=swap"/></Head>
         <style>{globalCSS}</style>
 
         <div className="topbar">
           <TopbarBotanical/>
-          <div className="topbar-logo"><span className="lm">meraki</span><span className="la">ads</span></div>
+          <span className="topbar-logo"><span className="lm">meraki</span><span className="la">ads</span></span>
           <div className="topbar-right">
             <button className="btn btn-sm" onClick={loadAll}><i className="ti ti-refresh"></i> Refresh</button>
             <button className="btn btn-sm" onClick={logout}><i className="ti ti-logout"></i> Sign out</button>
@@ -437,7 +435,7 @@ export default function Home() {
 
         {/* OVERVIEW */}
         {activeTab==="overview" && (
-          <div className="content" style={{position:"relative"}}><BodyBotanical/>
+          <div className="content">
             {/* Alerts */}
             {ov>0 && <div className="alert alert-red"><i className="ti ti-alert-circle"></i><span><strong>{ov} post{ov>1?"s are":" is"} overdue</strong> — scheduled time has passed and not fully posted.</span></div>}
             {td>0 && <div className="alert alert-amber"><i className="ti ti-clock"></i><span><strong>{td} post{td>1?"s":""} due today</strong> — keep an eye on these.</span></div>}
@@ -485,7 +483,7 @@ export default function Home() {
 
         {/* NEW POST */}
         {activeTab==="new" && (
-          <div className="content" style={{position:"relative"}}><BodyBotanical/>
+          <div className="content">
             <div className="section-title">Create new post</div>
             <div className="form-card">
               <div className="form-row">
@@ -533,7 +531,7 @@ export default function Home() {
 
         {/* CLIENTS */}
         {activeTab==="clients" && (
-          <div className="content" style={{position:"relative"}}><BodyBotanical/>
+          <div className="content">
             {clientSuccess && <div className="success-banner" style={{display:"block"}}>{clientSuccess}</div>}
             <div className="section-title">Add new client</div>
             <div className="form-card" style={{marginBottom:"1.5rem"}}>
@@ -600,7 +598,7 @@ export default function Home() {
 
         {/* SOW TAB */}
         {activeTab==="sow" && (
-          <div className="content" style={{position:"relative"}}><BodyBotanical/>
+          <div className="content">
             {/* Header row */}
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"1rem",flexWrap:"wrap",gap:8}}>
               <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -820,12 +818,11 @@ export default function Home() {
       <>
         <Head><title>Posting Team – Postings</title>
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600&family=Cormorant+Garamond:ital,wght@1,400&display=swap"/>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600&family=Cormorant+Garamond:ital,wght@1,400&display=swap"/></Head>
         <style>{globalCSS}</style>
         <div className="topbar">
           <TopbarBotanical/>
-          <div className="topbar-logo"><span className="lm">meraki</span><span className="la">ads</span></div>
+          <span className="topbar-logo"><span className="lm">meraki</span><span className="la">ads</span></span>
           <div className="topbar-right">
             <button className="btn btn-sm" onClick={loadAll}><i className="ti ti-refresh"></i> Refresh</button>
             <button className="btn btn-sm" onClick={logout}><i className="ti ti-logout"></i> Sign out</button>
@@ -1134,80 +1131,9 @@ function Toast({msg, show}) {
   return <div className="toast" style={{display:show?"block":"none"}}>{msg}</div>;
 }
 
-// ── BOTANICAL SVG COMPONENTS ────────────────────────────────
-function TopbarBotanical() {
-  return (
-    <svg className="topbar-botanical" viewBox="0 0 800 54" xmlns="http://www.w3.org/2000/svg">
-      <line x1="0" y1="0" x2="800" y2="0" stroke="#7DC242" strokeWidth="2.5" opacity="0.7"/>
-      <path d="M -2 54 Q 10 36 32 28 Q 30 46 -2 54 Z" fill="#C5E89A" opacity="0.5"/>
-      <path d="M -2 54 Q 22 38 32 28" stroke="#7DC242" strokeWidth="0.8" fill="none" opacity="0.45"/>
-      <path d="M 14 54 Q 24 36 44 28 Q 38 46 14 54 Z" fill="#97C459" opacity="0.38"/>
-      <path d="M -4 46 Q 16 30 40 24 Q 34 42 -4 46 Z" fill="#C0DD97" opacity="0.3"/>
-      <path d="M 28 56 Q 28 36 30 22" stroke="#639922" strokeWidth="1" fill="none" opacity="0.38" strokeLinecap="round"/>
-      <circle cx="30" cy="18" r="4" fill="#29ABE2" opacity="0.4"/>
-      <circle cx="30" cy="18" r="2.5" fill="#7DC242" opacity="0.55"/>
-      <ellipse cx="24" cy="13" rx="4" ry="2.5" fill="#A8DCF0" opacity="0.45" transform="rotate(-30 24 13)"/>
-      <ellipse cx="36" cy="13" rx="4" ry="2.5" fill="#A8DCF0" opacity="0.45" transform="rotate(30 36 13)"/>
-      <path d="M 802 0 Q 790 20 766 28 Q 764 10 802 0 Z" fill="#C5E89A" opacity="0.5"/>
-      <path d="M 802 0 Q 778 22 766 28" stroke="#7DC242" strokeWidth="0.8" fill="none" opacity="0.45"/>
-      <path d="M 786 0 Q 764 18 754 28 Q 756 10 786 0 Z" fill="#97C459" opacity="0.38"/>
-      <path d="M 804 8 Q 782 26 762 30 Q 766 14 804 8 Z" fill="#C0DD97" opacity="0.3"/>
-      <path d="M 770 -2 Q 770 20 768 34" stroke="#639922" strokeWidth="1" fill="none" opacity="0.38" strokeLinecap="round"/>
-      <circle cx="768" cy="38" r="4" fill="#FAC775" opacity="0.5"/>
-      <circle cx="768" cy="38" r="2.5" fill="#EF9F27" opacity="0.55"/>
-      <ellipse cx="762" cy="33" rx="4" ry="2.5" fill="#FAC775" opacity="0.45" transform="rotate(-30 762 33)"/>
-      <ellipse cx="774" cy="33" rx="4" ry="2.5" fill="#FAC775" opacity="0.45" transform="rotate(30 774 33)"/>
-    </svg>
-  );
-}
+// ── GLOBAL CSS ─────────────────────────────────────────────
 
-function BodyBotanical() {
-  return (
-    <>
-      <svg style={{position:"absolute",top:0,right:0,width:"200px",height:"100%",pointerEvents:"none",zIndex:0}} viewBox="0 0 200 600" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMaxYMid meet">
-        <path d="M 160 0 Q 178 38 152 72 Q 134 38 160 0 Z" fill="#C5E89A" opacity="0.32"/>
-        <path d="M 160 0 Q 140 38 152 72" stroke="#7DC242" strokeWidth="0.8" fill="none" opacity="0.28"/>
-        <path d="M 182 8 Q 196 50 168 82 Q 148 50 182 8 Z" fill="#97C459" opacity="0.22"/>
-        <path d="M 142 16 Q 160 58 156 98 Q 136 58 142 16 Z" fill="#C0DD97" opacity="0.26"/>
-        <path d="M 156 -2 Q 155 46 153 100" stroke="#639922" strokeWidth="1.2" fill="none" opacity="0.3" strokeLinecap="round"/>
-        <circle cx="153" cy="106" r="5.5" fill="#FAC775" opacity="0.48"/>
-        <circle cx="153" cy="106" r="3" fill="#EF9F27" opacity="0.52"/>
-        <ellipse cx="146" cy="100" rx="5.5" ry="3" fill="#FAC775" opacity="0.42" transform="rotate(-35 146 100)"/>
-        <ellipse cx="160" cy="100" rx="5.5" ry="3" fill="#FAC775" opacity="0.42" transform="rotate(35 160 100)"/>
-        <path d="M 175 210 Q 194 244 168 274 Q 150 244 175 210 Z" fill="#C5E89A" opacity="0.26"/>
-        <path d="M 175 210 Q 155 244 168 274" stroke="#7DC242" strokeWidth="0.8" fill="none" opacity="0.24"/>
-        <path d="M 190 220 Q 205 258 182 284 Q 162 258 190 220 Z" fill="#97C459" opacity="0.18"/>
-        <path d="M 178 200 Q 176 244 172 282" stroke="#639922" strokeWidth="1" fill="none" opacity="0.26" strokeLinecap="round"/>
-        <circle cx="172" cy="288" r="5" fill="#29ABE2" opacity="0.38"/>
-        <circle cx="172" cy="288" r="3" fill="#7DC242" opacity="0.48"/>
-        <ellipse cx="166" cy="282" rx="5" ry="3" fill="#A8DCF0" opacity="0.36" transform="rotate(-30 166 282)"/>
-        <ellipse cx="178" cy="282" rx="5" ry="3" fill="#A8DCF0" opacity="0.36" transform="rotate(30 178 282)"/>
-        <path d="M 165 400 Q 186 432 160 462 Q 142 432 165 400 Z" fill="#C5E89A" opacity="0.28"/>
-        <path d="M 182 410 Q 198 444 175 470 Q 156 444 182 410 Z" fill="#97C459" opacity="0.2"/>
-        <path d="M 148 416 Q 166 450 163 482 Q 144 450 148 416 Z" fill="#C0DD97" opacity="0.24"/>
-        <path d="M 164 390 Q 162 430 160 472" stroke="#639922" strokeWidth="1" fill="none" opacity="0.26" strokeLinecap="round"/>
-        <circle cx="160" cy="478" r="5" fill="#FAC775" opacity="0.44"/>
-        <circle cx="160" cy="478" r="3" fill="#EF9F27" opacity="0.5"/>
-        <circle cx="120" cy="155" r="2" fill="#7DC242" opacity="0.18"/>
-        <circle cx="188" cy="175" r="1.5" fill="#29ABE2" opacity="0.16"/>
-        <circle cx="135" cy="330" r="2" fill="#97C459" opacity="0.18"/>
-        <circle cx="192" cy="360" r="1.5" fill="#FAC775" opacity="0.2"/>
-        <circle cx="112" cy="460" r="2" fill="#29ABE2" opacity="0.16"/>
-      </svg>
-      <svg style={{position:"absolute",bottom:0,left:0,width:"80px",height:"160px",pointerEvents:"none",zIndex:0}} viewBox="0 0 80 160" xmlns="http://www.w3.org/2000/svg">
-        <path d="M -2 160 Q 8 134 28 122 Q 26 142 -2 160 Z" fill="#C5E89A" opacity="0.3"/>
-        <path d="M -2 150 Q 14 128 34 120 Q 28 140 -2 150 Z" fill="#97C459" opacity="0.22"/>
-        <path d="M 12 160 Q 22 134 38 124 Q 32 144 12 160 Z" fill="#C0DD97" opacity="0.25"/>
-        <path d="M 20 162 Q 22 138 24 118" stroke="#639922" strokeWidth="1" fill="none" opacity="0.28" strokeLinecap="round"/>
-        <circle cx="24" cy="114" r="4" fill="#29ABE2" opacity="0.34"/>
-        <circle cx="24" cy="114" r="2.5" fill="#7DC242" opacity="0.44"/>
-      </svg>
-    </>
-  );
-}
-
-// ── QUOTE CARD ───────────────────────────────────────────────
-const QUOTES_365 = ["Make noise until the world can't scroll past you.","Every pixel is a promise to your audience.","Stories that sell. Brands that stay.","Be so good they can't unfollow you.","The feed is your canvas. Paint it boldly.","Great marketing doesn't interrupt — it inspires.","Your brand is what people say when you're not in the room.","Content is the fire. Distribution is the oxygen.","Don't just post. Make people feel something.","Consistency is the new creativity.","Small brands. Big ideas. Infinite impact.","The algorithm rewards those who show up every day.","Build brands people believe in.","A scroll stopped is a story started.","Marketing is no longer about the stuff you make, but the stories you tell.","Make it simple. Make it memorable. Make it matter.","The best campaigns feel like conversations.","Design speaks before words can.","Earn attention. Don't beg for it.","Be the brand that shows up when it counts.","Ideas are currency. Spend them wisely.","One great post can open a thousand doors.","Your audience doesn't want ads. Give them art.","The right message, the right person, the right time — that's magic.","Trust is built one post at a time.","Creativity without strategy is just art. Together, it's magic.","Brands that listen grow faster than those that shout.","Make the logo bigger? Make the idea bigger.","Every campaign is a chance to change someone's mind.","The best ROI is a story worth sharing.","Show up. Stand out. Scale up.","Your next client is already scrolling. Be ready.","Authenticity is the only strategy that never goes out of style.","Good content answers questions. Great content asks better ones.","Data tells you what happened. Creativity shapes what happens next.","A strong brand is the most valuable real estate in business.","Work hard in silence. Let results make the noise.","Every post is a handshake with your future customer.","Trends fade. Voice endures.","The most powerful marketing is a customer who talks about you.","Stop chasing virality. Start building loyalty.","Think big. Target smart. Create boldly.","The brands winning today are the ones that feel human.","Capture attention. Earn trust. Deliver value.","What you post today builds what you become tomorrow.","Be the content your audience looks forward to.","Every brand has a story. Make yours worth reading.","Strategy without creativity is a map without a destination.","The goal isn't more followers. It's deeper connection.","Bold ideas, backed by data — that's the formula.","Less noise. More signal.","Your next breakthrough is one great idea away.","Campaigns come and go. Culture stays forever.","Post with purpose. Measure with precision.","Creativity is intelligence having fun.","The best brands don't sell products. They sell belonging.","Marketing is empathy at scale.","Don't find customers for your products. Find products for your customers.","A great headline is worth a thousand images.","Your audience is the algorithm. Please them first.","The difference between good and great is one more revision.","Make people feel seen. That's your superpower.","Behind every click is a human being. Remember that.","Campaigns are tactics. Brand is character.","Silence your doubts louder than your competition.","Turn browsers into believers.","The reel stops. The feeling stays.","Obsess over the audience, not the algorithm.","A brand without a story is just a logo.","Clarity converts. Complexity confuses.","Make something you'd be proud to show your clients.","Surprise your audience before the competition does.","Move fast, but never lose your voice.","The brief is the beginning. The idea is the breakthrough.","Every comment is a conversation waiting to happen.","Results speak. But stories echo.","Think like a publisher. Act like a marketer.","Great work is its own distribution.","Start with why. End with wow.","There's no traffic jam on the extra mile.","Put your message in places your audience already loves.","Attention is earned, not bought.","One insight can rewrite an entire strategy.","The detail you almost skipped is the one they'll remember.","Be consistent enough that people expect you. Surprising enough that they look.","Your brand voice is your competitive advantage.","Every brand that ever changed the world started with one idea.","If your content disappeared tomorrow, would anyone miss it?","Earn every scroll. Deserve every click.","The best brief is a deep understanding of your audience.","Originality is the rarest currency in marketing.","Community is the new campaign.","Speak to one person. Reach thousands.","Play the long game. Build something that lasts.","Your tone is your brand. Guard it fiercely.","Make the work so good it makes people stop mid-scroll.","Be so consistent they quote you without tagging you.","Market like the person you're talking to matters. Because they do.","Boldness is a strategy.","The best creative teams argue loudly and execute beautifully.","The most dangerous place in marketing is your comfort zone.","Brands don't die from competition. They die from irrelevance.","Design is not decoration. It is communication.","Say something. Mean something. Change something.","Your passion is your most persuasive pitch.","No brief is too small when the idea is big enough.","The team that plays together, wins together.","Measure twice. Post once. Optimize always.","Grow with your clients. Win with your clients.","The inbox is a privilege. Earn it.","Build brands that make people proud to buy.","A good strategy feels inevitable in hindsight.","Your next great idea is already inside the data.","Take risks in the work. Take care of the client.","The best creatives never stop being curious.","Deadlines are just creative speed boosts.","Ideas that scare you a little are usually the best ones.","What gets measured gets improved. What gets improved gets results.","Every brand touchpoint is a chance to delight.","Your audience remembers how you made them feel.","The work is never finished. It's only due.","Think globally. Connect locally.","The agencies that last are the ones that keep learning.","Your greatest case study is the one you're working on right now.","Don't just meet expectations. Exceed them every time.","A fresh perspective is worth a hundred extra hours.","Run campaigns. Build legacies.","Every revision makes it better. Every no makes you stronger.","Make your process as beautiful as your output.","The best clients trust you. Earn that trust daily.","Create content that outlives the campaign.","Pixels, purpose, and persistence — that's the formula.","Be the agency your clients brag about.","Momentum is built one brilliant post at a time.","The market rewards those who take creative risks.","Stay hungry. Stay creative. Stay meraki.","A brand is a promise kept consistently.","Today's effort is tomorrow's result.","Simplicity is the ultimate sophistication in advertising.","Chase excellence. Success will follow.","Don't advertise at people. Connect with them.","The best briefs leave room for magic.","There are no boring brands — only uninspired strategies.","Show your work. Share your thinking. Own your results.","Keep the client happy. Keep the audience happier.","Build something bigger than a campaign.","Great teams don't just deliver. They elevate.","If it doesn't feel bold, make it bolder.","The story you tell today shapes the sale of tomorrow.","Your craft is your calling card.","Work that moves people moves needles.","Speak the language of your audience, not your industry.","Every brand started with someone who believed in it first.","Less selling, more serving.","The ones who change the game are too busy playing to notice the rules.","Excellence is not an act but a habit.","Ideas don't expire. But trends do.","Your team is your most powerful creative asset.","Real engagement is earned, not engineered.","Push the work until it pushes back.","Think like a strategist. Feel like a human.","The click is the beginning. The experience is the campaign.","Do good work for good people.","Every idea is a seed. Water it with execution.","Content without context is just noise.","Make the mundane magnificent.","The creative process is messy. The result should be flawless.","Success in marketing is never final. Keep iterating.","Be the team clients call first and thank last.","Put your whole self into the work.","The best idea in the room hasn't been said yet.","Brands that give value get loyalty in return.","Make it click. Make it stick. Make it convert.","Creativity is the last legal advantage.","The brief is a question. The campaign is the answer.","Stay inspired or stay irrelevant.","One brave decision can unlock an entire strategy.","Your campaign is only as strong as your idea.","Art for attention. Science for results.","Build bridges between brands and people.","Make it resonate before you make it viral.","The most important metric is whether you made someone feel something.","Strong teams make strong campaigns.","Let the work speak louder than the pitch.","Marketing is the art of making people care.","Solve real problems. Win real loyalty.","Your next idea is worth more than your last excuse.","Show up for your brand the way you'd show up for your best client.","Stay curious. Stay sharp. Stay meraki.","Influence is built through value, not volume.","Sometimes the wildest idea is the wisest strategy.","Work with heart. Measure with head.","The audience is always right. The algorithm is sometimes right.","Beautiful work is a business advantage.","When in doubt, make it more human.","Campaigns end. Brands live on.","Every click is a vote of confidence. Earn it.","Think about the thousandth customer, not just the first.","Details are not details. They make the design.","The best marketing makes people feel like they discovered it.","Clients come for the work. They stay for the trust.","Excellence is a culture, not a deadline.","The strongest brands are built on the clearest ideas.","Be the calm in your client's storm.","Pour passion into every post.","One team, one vision, infinite possibilities.","You don't need a big budget. You need a big idea.","The world needs your brand's best voice. Use it.","Make your work impossible to ignore.","Every strategy should start with a single human truth.","Protect the idea. Fight for the vision.","A great campaign is remembered. A great brand is trusted.","Sell the dream. Deliver the reality.","There is no such thing as a small campaign for a big idea.","The best strategies feel obvious once you've seen them.","Turn every touchpoint into a moment worth remembering.","If you're not growing, you're coasting.","The most creative work comes from the most focused briefs.","Be the agency that changes things.","Your brand is alive. Treat it that way.","Great work requires great courage.","Believe in the work before anyone else does.","Stay true to the idea even when the deadline screams.","Make every client feel like your only client.","The best campaigns don't just launch — they land.","Let curiosity lead your best strategies.","A strong voice in a crowded feed is a rare gift. Use it.","Scale creativity, not just spend.","Your team's belief in an idea is the first proof of concept.","Insight turns data into gold.","Create work that makes your team proud.","Never sacrifice the idea for the timeline.","The brands people love are the ones that never stopped caring.","Marketing at its best is service with style.","One brief. One focus. One unforgettable idea.","Where others see a product, we see a story.","Be brave enough to stand out in any feed.","The right words in the right order can change everything.","Let your portfolio do the talking.","Make beauty purposeful and purpose beautiful.","The campaign you're most nervous about is usually the best one.","Every day is a chance to make something worth remembering.","Don't just reach people — move them.","Design thinking leads to market winning.","The brand that listens loudest wins.","Your reputation is built post by post.","Ambition is just imagination with a deadline.","Good marketing makes the company look smart. Great marketing makes the customer feel smart.","Inspire your team. Inspire your clients. Inspire the market.","Every post is a brick in your brand's house.","Chase the idea, not the trend.","The most memorable brands make you feel like family.","Real creativity has no off switch.","A single great idea can outrun a million mediocre ones.","Do the work even when no one is watching.","Put your signature on everything you make.","The best day to do great work is always today.","Meraki: to do something with soul, creativity, and love.","Build it well. Build it beautifully. Build it to last.","Stay humble in the pitch room. Stay bold on the canvas.","The brief is just the beginning of the story.","Make clients feel heard before you make them feel wowed.","Patience builds brands. Urgency builds campaigns.","Never stop asking: what would make this even better?","Art and science together make unstoppable marketing.","Your best work is always the next one.","Think like a startup. Execute like a studio.","The ads that changed culture didn't just sell products — they told truths.","Every brand has a heartbeat. Find it and amplify it.","Pour your whole heart into a half-second scroll stop.","Great design is great communication.","Be the agency that makes clients say yes to bold.","The right strategy at the right moment is worth more than the biggest budget.","Build brands with the care of a craftsman.","Every rejection sharpens the idea.","You are what you consistently create.","Dare to make work that no algorithm can predict.","The world's best brands were built by people who cared deeply.","In a world of content, be a signal.","Make it once. Make it right. Make it memorable.","The story you're afraid to tell is the one worth telling.","Go beyond the brief. Blow past expectations.","Every scroll is a competition. Win it with craft.","The most powerful tool in marketing is sincerity.","Make the work so good that the client becomes a fan.","Creativity isn't a department. It's a mindset.","Turn strategy into storytelling. Storytelling into sales.","Be obsessed with the customer's experience.","The spark of an idea can light an entire market.","Start with empathy. End with impact.","Every campaign deserves your very best.","Think big, start now.","Make it feel effortless — even when it wasn't.","The greatest creative risk is playing it safe.","Your work reflects your values. Make both exceptional.","Every brief is an invitation to create something extraordinary.","Be relentless in the pursuit of great work.","Relevance today. Legacy tomorrow.","Behind every great brand is a team that refuses to settle.","Make work you'd hang on your wall.","Show the world what a digital agency truly looks like.","The best campaigns feel like gifts to the audience.","Courage is the most creative act.","We don't just manage accounts. We build futures.","The idea is everything. Protect it.","Create. Iterate. Inspire. Repeat."];
+const QUOTES_365 = ["Make noise until the world can"t scroll past you.", "Every pixel is a promise to your audience.", "Stories that sell. Brands that stay.", "Be so good they can"t unfollow you.", "The feed is your canvas. Paint it boldly.", "Great marketing doesn"t interrupt — it inspires.", "Your brand is what people say when you"re not in the room.", "Content is the fire. Distribution is the oxygen.", "Don"t just post. Make people feel something.", "Consistency is the new creativity.", "Small brands. Big ideas. Infinite impact.", "The algorithm rewards those who show up every day.", "Build brands people believe in.", "A scroll stopped is a story started.", "Marketing is no longer about the stuff you make, but the stories you tell.", "Make it simple. Make it memorable. Make it matter.", "The best campaigns feel like conversations.", "Design speaks before words can.", "Earn attention. Don"t beg for it.", "Be the brand that shows up when it counts.", "Ideas are currency. Spend them wisely.", "One great post can open a thousand doors.", "Your audience doesn"t want ads. Give them art.", "The right message, the right person, the right time — that"s magic.", "Trust is built one post at a time.", "Creativity without strategy is just art. Together, it"s magic.", "Brands that listen grow faster than those that shout.", "Make the logo bigger? Make the idea bigger.", "Every campaign is a chance to change someone"s mind.", "The best ROI is a story worth sharing.", "Show up. Stand out. Scale up.", "Your next client is already scrolling. Be ready.", "Authenticity is the only strategy that never goes out of style.", "Good content answers questions. Great content asks better ones.", "Data tells you what happened. Creativity shapes what happens next.", "A strong brand is the most valuable real estate in business.", "Work hard in silence. Let results make the noise.", "Every post is a handshake with your future customer.", "Trends fade. Voice endures.", "The most powerful marketing is a customer who talks about you.", "Stop chasing virality. Start building loyalty.", "Think big. Target smart. Create boldly.", "The brands winning today are the ones that feel human.", "Capture attention. Earn trust. Deliver value.", "What you post today builds what you become tomorrow.", "Be the content your audience looks forward to.", "Every brand has a story. Make yours worth reading.", "Strategy without creativity is a map without a destination.", "The goal isn"t more followers. It"s deeper connection.", "Bold ideas, backed by data — that"s the formula.", "Less noise. More signal.", "Your next breakthrough is one great idea away.", "Campaigns come and go. Culture stays forever.", "Post with purpose. Measure with precision.", "Creativity is intelligence having fun.", "The best brands don"t sell products. They sell belonging.", "Marketing is empathy at scale.", "Don"t find customers for your products. Find products for your customers.", "A great headline is worth a thousand images.", "Your audience is the algorithm. Please them first.", "The difference between good and great is one more revision.", "Make people feel seen. That"s your superpower.", "Behind every click is a human being. Remember that.", "Campaigns are tactics. Brand is character.", "Silence your doubts louder than your competition.", "Turn browsers into believers.", "The reel stops. The feeling stays.", "Obsess over the audience, not the algorithm.", "A brand without a story is just a logo.", "Clarity converts. Complexity confuses.", "Make something you"d be proud to show your clients.", "Surprise your audience before the competition does.", "Move fast, but never lose your voice.", "The brief is the beginning. The idea is the breakthrough.", "Every comment is a conversation waiting to happen.", "Results speak. But stories echo.", "Think like a publisher. Act like a marketer.", "Great work is its own distribution.", "Start with why. End with wow.", "There"s no traffic jam on the extra mile.", "Put your message in places your audience already loves.", "Attention is earned, not bought.", "One insight can rewrite an entire strategy.", "The detail you almost skipped is the one they"ll remember.", "Be consistent enough that people expect you. Surprising enough that they look.", "Your brand voice is your competitive advantage.", "Every brand that ever changed the world started with one idea.", "If your content disappeared tomorrow, would anyone miss it?", "Earn every scroll. Deserve every click.", "The best brief is a deep understanding of your audience.", "Originality is the rarest currency in marketing.", "Community is the new campaign.", "Speak to one person. Reach thousands.", "Play the long game. Build something that lasts.", "Your tone is your brand. Guard it fiercely.", "Make the work so good it makes people stop mid-scroll.", "Be so consistent they quote you without tagging you.", "Market like the person you"re talking to matters. Because they do.", "Boldness is a strategy.", "The best creative teams argue loudly and execute beautifully.", "The most dangerous place in marketing is your comfort zone.", "Brands don"t die from competition. They die from irrelevance.", "Design is not decoration. It is communication.", "Say something. Mean something. Change something.", "Your passion is your most persuasive pitch.", "No brief is too small when the idea is big enough.", "The team that plays together, wins together.", "Measure twice. Post once. Optimize always.", "Grow with your clients. Win with your clients.", "The inbox is a privilege. Earn it.", "Build brands that make people proud to buy.", "A good strategy feels inevitable in hindsight.", "Your next great idea is already inside the data.", "Take risks in the work. Take care of the client.", "The best creatives never stop being curious.", "Deadlines are just creative speed boosts.", "Ideas that scare you a little are usually the best ones.", "What gets measured gets improved. What gets improved gets results.", "Every brand touchpoint is a chance to delight.", "Your audience remembers how you made them feel.", "The work is never finished. It"s only due.", "Think globally. Connect locally.", "The agencies that last are the ones that keep learning.", "Your greatest case study is the one you"re working on right now.", "Don"t just meet expectations. Exceed them every time.", "A fresh perspective is worth a hundred extra hours.", "Run campaigns. Build legacies.", "Every revision makes it better. Every no makes you stronger.", "Make your process as beautiful as your output.", "The best clients trust you. Earn that trust daily.", "Create content that outlives the campaign.", "Pixels, purpose, and persistence — that"s the formula.", "Be the agency your clients brag about.", "Momentum is built one brilliant post at a time.", "The market rewards those who take creative risks.", "Stay hungry. Stay creative. Stay meraki.", "A brand is a promise kept consistently.", "Today"s effort is tomorrow"s result.", "Simplicity is the ultimate sophistication in advertising.", "Chase excellence. Success will follow.", "Don"t advertise at people. Connect with them.", "The best briefs leave room for magic.", "There are no boring brands — only uninspired strategies.", "Show your work. Share your thinking. Own your results.", "Keep the client happy. Keep the audience happier.", "Build something bigger than a campaign.", "Great teams don"t just deliver. They elevate.", "If it doesn"t feel bold, make it bolder.", "The story you tell today shapes the sale of tomorrow.", "Your craft is your calling card.", "Work that moves people moves needles.", "Speak the language of your audience, not your industry.", "Every brand started with someone who believed in it first.", "Less selling, more serving.", "The ones who change the game are too busy playing to notice the rules.", "Excellence is not an act but a habit.", "Ideas don"t expire. But trends do.", "Your team is your most powerful creative asset.", "Real engagement is earned, not engineered.", "Push the work until it pushes back.", "Think like a strategist. Feel like a human.", "The click is the beginning. The experience is the campaign.", "Do good work for good people.", "Every idea is a seed. Water it with execution.", "Content without context is just noise.", "Make the mundane magnificent.", "The creative process is messy. The result should be flawless.", "Success in marketing is never final. Keep iterating.", "Be the team clients call first and thank last.", "Put your whole self into the work.", "The best idea in the room hasn"t been said yet.", "Brands that give value get loyalty in return.", "Make it click. Make it stick. Make it convert.", "Creativity is the last legal advantage.", "The brief is a question. The campaign is the answer.", "Stay inspired or stay irrelevant.", "One brave decision can unlock an entire strategy.", "Your campaign is only as strong as your idea.", "Art for attention. Science for results.", "Build bridges between brands and people.", "Make it resonate before you make it viral.", "The most important metric is whether you made someone feel something.", "Strong teams make strong campaigns.", "Let the work speak louder than the pitch.", "Marketing is the art of making people care.", "Solve real problems. Win real loyalty.", "Your next idea is worth more than your last excuse.", "Show up for your brand the way you"d show up for your best client.", "Stay curious. Stay sharp. Stay meraki.", "Influence is built through value, not volume.", "Sometimes the wildest idea is the wisest strategy.", "Work with heart. Measure with head.", "The audience is always right. The algorithm is sometimes right.", "Beautiful work is a business advantage.", "When in doubt, make it more human.", "Campaigns end. Brands live on.", "Every click is a vote of confidence. Earn it.", "Think about the thousandth customer, not just the first.", "Details are not details. They make the design.", "The best marketing makes people feel like they discovered it.", "Clients come for the work. They stay for the trust.", "Excellence is a culture, not a deadline.", "The strongest brands are built on the clearest ideas.", "Be the calm in your client"s storm.", "Pour passion into every post.", "One team, one vision, infinite possibilities.", "You don"t need a big budget. You need a big idea.", "The world needs your brand"s best voice. Use it.", "Make your work impossible to ignore.", "Every strategy should start with a single human truth.", "Protect the idea. Fight for the vision.", "A great campaign is remembered. A great brand is trusted.", "Sell the dream. Deliver the reality.", "There is no such thing as a small campaign for a big idea.", "The best strategies feel obvious once you"ve seen them.", "Turn every touchpoint into a moment worth remembering.", "If you"re not growing, you"re coasting.", "The most creative work comes from the most focused briefs.", "Be the agency that changes things.", "Your brand is alive. Treat it that way.", "Great work requires great courage.", "Believe in the work before anyone else does.", "Stay true to the idea even when the deadline screams.", "Make every client feel like your only client.", "The best campaigns don"t just launch — they land.", "Let curiosity lead your best strategies.", "A strong voice in a crowded feed is a rare gift. Use it.", "Scale creativity, not just spend.", "Your team"s belief in an idea is the first proof of concept.", "Insight turns data into gold.", "Create work that makes your team proud.", "Never sacrifice the idea for the timeline.", "The brands people love are the ones that never stopped caring.", "Marketing at its best is service with style.", "One brief. One focus. One unforgettable idea.", "Where others see a product, we see a story.", "Be brave enough to stand out in any feed.", "The right words in the right order can change everything.", "Let your portfolio do the talking.", "Make beauty purposeful and purpose beautiful.", "The campaign you"re most nervous about is usually the best one.", "Every day is a chance to make something worth remembering.", "Don"t just reach people — move them.", "Design thinking leads to market winning.", "The brand that listens loudest wins.", "Your reputation is built post by post.", "Ambition is just imagination with a deadline.", "Good marketing makes the company look smart. Great marketing makes the customer feel smart.", "Inspire your team. Inspire your clients. Inspire the market.", "Every post is a brick in your brand"s house.", "Chase the idea, not the trend.", "The most memorable brands make you feel like family.", "Real creativity has no off switch.", "A single great idea can outrun a million mediocre ones.", "Do the work even when no one is watching.", "Put your signature on everything you make.", "The best day to do great work is always today.", "Meraki: to do something with soul, creativity, and love.", "Build it well. Build it beautifully. Build it to last.", "Stay humble in the pitch room. Stay bold on the canvas.", "The brief is just the beginning of the story.", "Make clients feel heard before you make them feel wowed.", "Patience builds brands. Urgency builds campaigns.", "Never stop asking: what would make this even better?", "Art and science together make unstoppable marketing.", "Your best work is always the next one.", "Think like a startup. Execute like a studio.", "The ads that changed culture didn"t just sell products — they told truths.", "Every brand has a heartbeat. Find it and amplify it.", "Pour your whole heart into a half-second scroll stop.", "Great design is great communication.", "Be the agency that makes clients say yes to bold.", "The right strategy at the right moment is worth more than the biggest budget.", "Build brands with the care of a craftsman.", "Every rejection sharpens the idea.", "You are what you consistently create.", "Dare to make work that no algorithm can predict.", "The world"s best brands were built by people who cared deeply.", "In a world of content, be a signal.", "Make it once. Make it right. Make it memorable.", "The story you"re afraid to tell is the one worth telling.", "Go beyond the brief. Blow past expectations.", "Every scroll is a competition. Win it with craft.", "The most powerful tool in marketing is sincerity.", "Make the work so good that the client becomes a fan.", "Creativity isn"t a department. It"s a mindset.", "Turn strategy into storytelling. Storytelling into sales.", "Be obsessed with the customer"s experience.", "The spark of an idea can light an entire market.", "Start with empathy. End with impact.", "Every campaign deserves your very best.", "Think big, start now.", "Make it feel effortless — even when it wasn"t.", "The greatest creative risk is playing it safe.", "Your work reflects your values. Make both exceptional.", "Every brief is an invitation to create something extraordinary.", "Be relentless in the pursuit of great work.", "Relevance today. Legacy tomorrow.", "Behind every great brand is a team that refuses to settle.", "Make work you"d hang on your wall.", "Show the world what a digital agency truly looks like.", "The best campaigns feel like gifts to the audience.", "Courage is the most creative act.", "We don"t just manage accounts. We build futures.", "The idea is everything. Protect it.", "Create. Iterate. Inspire. Repeat."];
 
 function getDayOfYear() {
   const now = new Date();
@@ -1216,45 +1142,43 @@ function getDayOfYear() {
 }
 
 function QuoteCard() {
-  const dayIdx = Math.min(getDayOfYear(), QUOTES_365.length - 1);
+  const dayIdx = Math.min(Math.max(getDayOfYear(), 0), QUOTES_365.length - 1);
   const quote = QUOTES_365[dayIdx] || QUOTES_365[0];
   const now = new Date();
   const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
   const dateStr = days[now.getDay()] + ", " + now.getDate() + " " + months[now.getMonth()] + " " + now.getFullYear();
-
   const words = quote.split(" ");
   const lines = [];
   let line = "";
   for (const w of words) {
     const t = line ? line + " " + w : w;
-    if (t.length > 36 && line) { lines.push(line); line = w; } else line = t;
+    if (t.length > 36 && line) { lines.push(line); line = w; } else { line = t; }
   }
   if (line) lines.push(line);
   const fs = lines.length > 3 ? 17 : lines.length > 2 ? 19 : 21;
   const lh = fs + 10;
   const midY = 96;
   const startY = midY - ((lines.length - 1) * lh) / 2;
-
+  const esc = (s) => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   const textEls = lines.map((l, i) =>
-    `<text x="200" y="${startY + i * lh}" text-anchor="middle" font-family="Dancing Script,cursive" font-size="${fs}" fill="#2C2C2A" font-weight="600">${l.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</text>`
+    `<text x="200" y="${startY + i * lh}" text-anchor="middle" font-family="Dancing Script,cursive" font-size="${fs}" fill="#2C2C2A" font-weight="600">${esc(l)}</text>`
   ).join("");
-
-  const svgContent = `<svg width="100%" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg" style="display:block">
-    <rect width="400" height="200" fill="#FDFCF8"/>
-    <path d="M -2 200 Q 8 164 30 144 Q 44 168 -2 200 Z" fill="#C5E89A" opacity="0.6"/>
-    <path d="M -2 200 Q 22 166 30 144" stroke="#7DC242" stroke-width="0.8" fill="none" opacity="0.5"/>
-    <path d="M 18 200 Q 28 166 48 154 Q 40 176 18 200 Z" fill="#97C459" opacity="0.4"/>
-    <path d="M -4 188 Q 14 158 24 132 Q 34 156 -4 188 Z" fill="#C0DD97" opacity="0.3"/>
-    <path d="M 28 202 Q 28 168 28 138" stroke="#639922" stroke-width="1" fill="none" opacity="0.38" stroke-linecap="round"/>
-    <circle cx="28" cy="134" r="4.5" fill="#29ABE2" opacity="0.4"/>
-    <circle cx="28" cy="134" r="2.5" fill="#7DC242" opacity="0.55"/>
-    <ellipse cx="22" cy="128" rx="4.5" ry="2.5" fill="#A8DCF0" opacity="0.45" transform="rotate(-30 22 128)"/>
-    <ellipse cx="34" cy="128" rx="4.5" ry="2.5" fill="#A8DCF0" opacity="0.45" transform="rotate(30 34 128)"/>
+  const svgH = 200;
+  const svgContent = `<svg width="100%" viewBox="0 0 400 ${svgH}" xmlns="http://www.w3.org/2000/svg" style="display:block">
+    <rect width="400" height="${svgH}" fill="#FDFCF8"/>
+    <path d="M -2 ${svgH} Q 8 ${svgH-38} 30 ${svgH-58} Q 44 ${svgH-34} -2 ${svgH} Z" fill="#C5E89A" opacity="0.6"/>
+    <path d="M -2 ${svgH} Q 22 ${svgH-42} 30 ${svgH-58}" stroke="#7DC242" stroke-width="0.8" fill="none" opacity="0.5"/>
+    <path d="M 18 ${svgH} Q 28 ${svgH-40} 48 ${svgH-50} Q 40 ${svgH-28} 18 ${svgH} Z" fill="#97C459" opacity="0.4"/>
+    <path d="M -4 ${svgH-10} Q 14 ${svgH-48} 24 ${svgH-72} Q 34 ${svgH-50} -4 ${svgH-10} Z" fill="#C0DD97" opacity="0.3"/>
+    <path d="M 28 ${svgH+2} Q 28 ${svgH-36} 28 ${svgH-64}" stroke="#639922" stroke-width="1" fill="none" opacity="0.38" stroke-linecap="round"/>
+    <circle cx="28" cy="${svgH-68}" r="4.5" fill="#29ABE2" opacity="0.4"/>
+    <circle cx="28" cy="${svgH-68}" r="2.5" fill="#7DC242" opacity="0.55"/>
+    <ellipse cx="22" cy="${svgH-74}" rx="4.5" ry="2.5" fill="#A8DCF0" opacity="0.45" transform="rotate(-30 22 ${svgH-74})"/>
+    <ellipse cx="34" cy="${svgH-74}" rx="4.5" ry="2.5" fill="#A8DCF0" opacity="0.45" transform="rotate(30 34 ${svgH-74})"/>
     <path d="M 402 0 Q 390 34 366 46 Q 362 22 402 0 Z" fill="#C5E89A" opacity="0.6"/>
     <path d="M 402 0 Q 376 26 366 46" stroke="#7DC242" stroke-width="0.8" fill="none" opacity="0.5"/>
     <path d="M 402 16 Q 374 38 356 48 Q 360 24 402 16 Z" fill="#97C459" opacity="0.38"/>
-    <path d="M 404 8 Q 386 40 376 68 Q 366 44 404 8 Z" fill="#C0DD97" opacity="0.28"/>
     <path d="M 374 -2 Q 372 28 370 56" stroke="#639922" stroke-width="1" fill="none" opacity="0.38" stroke-linecap="round"/>
     <circle cx="370" cy="60" r="4.5" fill="#FAC775" opacity="0.5"/>
     <circle cx="370" cy="60" r="2.5" fill="#EF9F27" opacity="0.55"/>
@@ -1269,147 +1193,6 @@ function QuoteCard() {
     <rect x="148" y="${midY+66}" width="104" height="18" rx="9" fill="#EAF3DE"/>
     <text x="200" y="${midY+78}" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#3B6D11" letter-spacing="0.3">${dateStr}</text>
   </svg>`;
-
-  return (
-    <div style={{width:"100%",maxWidth:"360px",background:"#fff",borderRadius:"18px",overflow:"hidden",border:"0.5px solid #e0e0e0"}}>
-      <div style={{height:"3px",background:"#7DC242"}}></div>
-      <div dangerouslySetInnerHTML={{__html: svgContent}}/>
-      <div style={{height:"3px",background:"#29ABE2"}}></d
-// ── BOTANICAL SVG COMPONENTS ────────────────────────────────
-function TopbarBotanical() {
-  return (
-    <svg className="topbar-botanical" viewBox="0 0 800 54" xmlns="http://www.w3.org/2000/svg">
-      <line x1="0" y1="0" x2="800" y2="0" stroke="#7DC242" strokeWidth="2.5" opacity="0.7"/>
-      <path d="M -2 54 Q 10 36 32 28 Q 30 46 -2 54 Z" fill="#C5E89A" opacity="0.5"/>
-      <path d="M -2 54 Q 22 38 32 28" stroke="#7DC242" strokeWidth="0.8" fill="none" opacity="0.45"/>
-      <path d="M 14 54 Q 24 36 44 28 Q 38 46 14 54 Z" fill="#97C459" opacity="0.38"/>
-      <path d="M -4 46 Q 16 30 40 24 Q 34 42 -4 46 Z" fill="#C0DD97" opacity="0.3"/>
-      <path d="M 28 56 Q 28 36 30 22" stroke="#639922" strokeWidth="1" fill="none" opacity="0.38" strokeLinecap="round"/>
-      <circle cx="30" cy="18" r="4" fill="#29ABE2" opacity="0.4"/>
-      <circle cx="30" cy="18" r="2.5" fill="#7DC242" opacity="0.55"/>
-      <ellipse cx="24" cy="13" rx="4" ry="2.5" fill="#A8DCF0" opacity="0.45" transform="rotate(-30 24 13)"/>
-      <ellipse cx="36" cy="13" rx="4" ry="2.5" fill="#A8DCF0" opacity="0.45" transform="rotate(30 36 13)"/>
-      <path d="M 802 0 Q 790 20 766 28 Q 764 10 802 0 Z" fill="#C5E89A" opacity="0.5"/>
-      <path d="M 802 0 Q 778 22 766 28" stroke="#7DC242" strokeWidth="0.8" fill="none" opacity="0.45"/>
-      <path d="M 786 0 Q 764 18 754 28 Q 756 10 786 0 Z" fill="#97C459" opacity="0.38"/>
-      <path d="M 804 8 Q 782 26 762 30 Q 766 14 804 8 Z" fill="#C0DD97" opacity="0.3"/>
-      <path d="M 770 -2 Q 770 20 768 34" stroke="#639922" strokeWidth="1" fill="none" opacity="0.38" strokeLinecap="round"/>
-      <circle cx="768" cy="38" r="4" fill="#FAC775" opacity="0.5"/>
-      <circle cx="768" cy="38" r="2.5" fill="#EF9F27" opacity="0.55"/>
-      <ellipse cx="762" cy="33" rx="4" ry="2.5" fill="#FAC775" opacity="0.45" transform="rotate(-30 762 33)"/>
-      <ellipse cx="774" cy="33" rx="4" ry="2.5" fill="#FAC775" opacity="0.45" transform="rotate(30 774 33)"/>
-    </svg>
-  );
-}
-
-function BodyBotanical() {
-  return (
-    <>
-      <svg style={{position:"absolute",top:0,right:0,width:"200px",height:"100%",pointerEvents:"none",zIndex:0}} viewBox="0 0 200 600" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMaxYMid meet">
-        <path d="M 160 0 Q 178 38 152 72 Q 134 38 160 0 Z" fill="#C5E89A" opacity="0.32"/>
-        <path d="M 160 0 Q 140 38 152 72" stroke="#7DC242" strokeWidth="0.8" fill="none" opacity="0.28"/>
-        <path d="M 182 8 Q 196 50 168 82 Q 148 50 182 8 Z" fill="#97C459" opacity="0.22"/>
-        <path d="M 142 16 Q 160 58 156 98 Q 136 58 142 16 Z" fill="#C0DD97" opacity="0.26"/>
-        <path d="M 156 -2 Q 155 46 153 100" stroke="#639922" strokeWidth="1.2" fill="none" opacity="0.3" strokeLinecap="round"/>
-        <circle cx="153" cy="106" r="5.5" fill="#FAC775" opacity="0.48"/>
-        <circle cx="153" cy="106" r="3" fill="#EF9F27" opacity="0.52"/>
-        <ellipse cx="146" cy="100" rx="5.5" ry="3" fill="#FAC775" opacity="0.42" transform="rotate(-35 146 100)"/>
-        <ellipse cx="160" cy="100" rx="5.5" ry="3" fill="#FAC775" opacity="0.42" transform="rotate(35 160 100)"/>
-        <path d="M 175 210 Q 194 244 168 274 Q 150 244 175 210 Z" fill="#C5E89A" opacity="0.26"/>
-        <path d="M 175 210 Q 155 244 168 274" stroke="#7DC242" strokeWidth="0.8" fill="none" opacity="0.24"/>
-        <path d="M 190 220 Q 205 258 182 284 Q 162 258 190 220 Z" fill="#97C459" opacity="0.18"/>
-        <path d="M 178 200 Q 176 244 172 282" stroke="#639922" strokeWidth="1" fill="none" opacity="0.26" strokeLinecap="round"/>
-        <circle cx="172" cy="288" r="5" fill="#29ABE2" opacity="0.38"/>
-        <circle cx="172" cy="288" r="3" fill="#7DC242" opacity="0.48"/>
-        <ellipse cx="166" cy="282" rx="5" ry="3" fill="#A8DCF0" opacity="0.36" transform="rotate(-30 166 282)"/>
-        <ellipse cx="178" cy="282" rx="5" ry="3" fill="#A8DCF0" opacity="0.36" transform="rotate(30 178 282)"/>
-        <path d="M 165 400 Q 186 432 160 462 Q 142 432 165 400 Z" fill="#C5E89A" opacity="0.28"/>
-        <path d="M 182 410 Q 198 444 175 470 Q 156 444 182 410 Z" fill="#97C459" opacity="0.2"/>
-        <path d="M 148 416 Q 166 450 163 482 Q 144 450 148 416 Z" fill="#C0DD97" opacity="0.24"/>
-        <path d="M 164 390 Q 162 430 160 472" stroke="#639922" strokeWidth="1" fill="none" opacity="0.26" strokeLinecap="round"/>
-        <circle cx="160" cy="478" r="5" fill="#FAC775" opacity="0.44"/>
-        <circle cx="160" cy="478" r="3" fill="#EF9F27" opacity="0.5"/>
-        <circle cx="120" cy="155" r="2" fill="#7DC242" opacity="0.18"/>
-        <circle cx="188" cy="175" r="1.5" fill="#29ABE2" opacity="0.16"/>
-        <circle cx="135" cy="330" r="2" fill="#97C459" opacity="0.18"/>
-        <circle cx="192" cy="360" r="1.5" fill="#FAC775" opacity="0.2"/>
-        <circle cx="112" cy="460" r="2" fill="#29ABE2" opacity="0.16"/>
-      </svg>
-      <svg style={{position:"absolute",bottom:0,left:0,width:"80px",height:"160px",pointerEvents:"none",zIndex:0}} viewBox="0 0 80 160" xmlns="http://www.w3.org/2000/svg">
-        <path d="M -2 160 Q 8 134 28 122 Q 26 142 -2 160 Z" fill="#C5E89A" opacity="0.3"/>
-        <path d="M -2 150 Q 14 128 34 120 Q 28 140 -2 150 Z" fill="#97C459" opacity="0.22"/>
-        <path d="M 12 160 Q 22 134 38 124 Q 32 144 12 160 Z" fill="#C0DD97" opacity="0.25"/>
-        <path d="M 20 162 Q 22 138 24 118" stroke="#639922" strokeWidth="1" fill="none" opacity="0.28" strokeLinecap="round"/>
-        <circle cx="24" cy="114" r="4" fill="#29ABE2" opacity="0.34"/>
-        <circle cx="24" cy="114" r="2.5" fill="#7DC242" opacity="0.44"/>
-      </svg>
-    </>
-  );
-}
-
-// ── QUOTE CARD ───────────────────────────────────────────────
-
-function getDayOfYear() {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 0);
-  return Math.floor((now - start) / 86400000) - 1;
-}
-
-function QuoteCard() {
-  const dayIdx = Math.min(getDayOfYear(), QUOTES_365.length - 1);
-  const quote = QUOTES_365[dayIdx] || QUOTES_365[0];
-  const now = new Date();
-  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-  const dateStr = days[now.getDay()] + ", " + now.getDate() + " " + months[now.getMonth()] + " " + now.getFullYear();
-
-  const words = quote.split(" ");
-  const lines = [];
-  let line = "";
-  for (const w of words) {
-    const t = line ? line + " " + w : w;
-    if (t.length > 36 && line) { lines.push(line); line = w; } else line = t;
-  }
-  if (line) lines.push(line);
-  const fs = lines.length > 3 ? 17 : lines.length > 2 ? 19 : 21;
-  const lh = fs + 10;
-  const midY = 96;
-  const startY = midY - ((lines.length - 1) * lh) / 2;
-
-  const textEls = lines.map((l, i) =>
-    `<text x="200" y="${startY + i * lh}" text-anchor="middle" font-family="Dancing Script,cursive" font-size="${fs}" fill="#2C2C2A" font-weight="600">${l.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</text>`
-  ).join("");
-
-  const svgContent = `<svg width="100%" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg" style="display:block">
-    <rect width="400" height="200" fill="#FDFCF8"/>
-    <path d="M -2 200 Q 8 164 30 144 Q 44 168 -2 200 Z" fill="#C5E89A" opacity="0.6"/>
-    <path d="M -2 200 Q 22 166 30 144" stroke="#7DC242" stroke-width="0.8" fill="none" opacity="0.5"/>
-    <path d="M 18 200 Q 28 166 48 154 Q 40 176 18 200 Z" fill="#97C459" opacity="0.4"/>
-    <path d="M -4 188 Q 14 158 24 132 Q 34 156 -4 188 Z" fill="#C0DD97" opacity="0.3"/>
-    <path d="M 28 202 Q 28 168 28 138" stroke="#639922" stroke-width="1" fill="none" opacity="0.38" stroke-linecap="round"/>
-    <circle cx="28" cy="134" r="4.5" fill="#29ABE2" opacity="0.4"/>
-    <circle cx="28" cy="134" r="2.5" fill="#7DC242" opacity="0.55"/>
-    <ellipse cx="22" cy="128" rx="4.5" ry="2.5" fill="#A8DCF0" opacity="0.45" transform="rotate(-30 22 128)"/>
-    <ellipse cx="34" cy="128" rx="4.5" ry="2.5" fill="#A8DCF0" opacity="0.45" transform="rotate(30 34 128)"/>
-    <path d="M 402 0 Q 390 34 366 46 Q 362 22 402 0 Z" fill="#C5E89A" opacity="0.6"/>
-    <path d="M 402 0 Q 376 26 366 46" stroke="#7DC242" stroke-width="0.8" fill="none" opacity="0.5"/>
-    <path d="M 402 16 Q 374 38 356 48 Q 360 24 402 16 Z" fill="#97C459" opacity="0.38"/>
-    <path d="M 404 8 Q 386 40 376 68 Q 366 44 404 8 Z" fill="#C0DD97" opacity="0.28"/>
-    <path d="M 374 -2 Q 372 28 370 56" stroke="#639922" stroke-width="1" fill="none" opacity="0.38" stroke-linecap="round"/>
-    <circle cx="370" cy="60" r="4.5" fill="#FAC775" opacity="0.5"/>
-    <circle cx="370" cy="60" r="2.5" fill="#EF9F27" opacity="0.55"/>
-    <ellipse cx="364" cy="54" rx="4.5" ry="2.5" fill="#FAC775" opacity="0.45" transform="rotate(-30 364 54)"/>
-    <ellipse cx="376" cy="54" rx="4.5" ry="2.5" fill="#FAC775" opacity="0.45" transform="rotate(30 376 54)"/>
-    <text x="52" y="${midY+32}" font-family="Cormorant Garamond,Georgia,serif" font-size="82" fill="#7DC242" opacity="0.1" font-style="italic">"</text>
-    <text x="298" y="${midY+54}" font-family="Cormorant Garamond,Georgia,serif" font-size="82" fill="#29ABE2" opacity="0.08" font-style="italic">"</text>
-    ${textEls}
-    <line x1="${200-52}" y1="${midY+44}" x2="${200+52}" y2="${midY+44}" stroke="#C0DD97" stroke-width="0.8"/>
-    <circle cx="200" cy="${midY+44}" r="2" fill="#7DC242" opacity="0.6"/>
-    <text x="200" y="${midY+58}" text-anchor="middle" font-family="Cormorant Garamond,Georgia,serif" font-size="11" fill="#aaa" font-style="italic" letter-spacing="1.5">Meraki Ads</text>
-    <rect x="148" y="${midY+66}" width="104" height="18" rx="9" fill="#EAF3DE"/>
-    <text x="200" y="${midY+78}" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#3B6D11" letter-spacing="0.3">${dateStr}</text>
-  </svg>`;
-
   return (
     <div style={{width:"100%",maxWidth:"360px",background:"#fff",borderRadius:"18px",overflow:"hidden",border:"0.5px solid #e0e0e0"}}>
       <div style={{height:"3px",background:"#7DC242"}}></div>
@@ -1419,23 +1202,37 @@ function QuoteCard() {
   );
 }
 
-iv>
-    </div>
+function TopbarBotanical() {
+  return (
+    <svg className="topbar-botanical" viewBox="0 0 800 54" xmlns="http://www.w3.org/2000/svg">
+      <line x1="0" y1="0" x2="800" y2="0" stroke="#7DC242" strokeWidth="2.5" opacity="0.7"/>
+      <path d="M -2 54 Q 10 36 32 28 Q 30 46 -2 54 Z" fill="#C5E89A" opacity="0.5"/>
+      <path d="M -2 54 Q 22 38 32 28" stroke="#7DC242" strokeWidth="0.8" fill="none" opacity="0.45"/>
+      <path d="M 14 54 Q 24 36 44 28 Q 38 46 14 54 Z" fill="#97C459" opacity="0.38"/>
+      <path d="M 28 56 Q 28 36 30 22" stroke="#639922" strokeWidth="1" fill="none" opacity="0.38" strokeLinecap="round"/>
+      <circle cx="30" cy="18" r="4" fill="#29ABE2" opacity="0.4"/>
+      <circle cx="30" cy="18" r="2.5" fill="#7DC242" opacity="0.55"/>
+      <ellipse cx="24" cy="13" rx="4" ry="2.5" fill="#A8DCF0" opacity="0.45" transform="rotate(-30 24 13)"/>
+      <ellipse cx="36" cy="13" rx="4" ry="2.5" fill="#A8DCF0" opacity="0.45" transform="rotate(30 36 13)"/>
+      <path d="M 802 0 Q 790 20 766 28 Q 764 10 802 0 Z" fill="#C5E89A" opacity="0.5"/>
+      <path d="M 802 0 Q 778 22 766 28" stroke="#7DC242" strokeWidth="0.8" fill="none" opacity="0.45"/>
+      <path d="M 786 0 Q 764 18 754 28 Q 756 10 786 0 Z" fill="#97C459" opacity="0.38"/>
+      <path d="M 770 -2 Q 770 20 768 34" stroke="#639922" strokeWidth="1" fill="none" opacity="0.38" strokeLinecap="round"/>
+      <circle cx="768" cy="38" r="4" fill="#FAC775" opacity="0.5"/>
+      <circle cx="768" cy="38" r="2.5" fill="#EF9F27" opacity="0.55"/>
+      <ellipse cx="762" cy="33" rx="4" ry="2.5" fill="#FAC775" opacity="0.45" transform="rotate(-30 762 33)"/>
+      <ellipse cx="774" cy="33" rx="4" ry="2.5" fill="#FAC775" opacity="0.45" transform="rotate(30 774 33)"/>
+    </svg>
   );
 }
 
->;
-}
-
-// ── GLOBAL CSS ─────────────────────────────────────────────
 const globalCSS = `
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600&family=Cormorant+Garamond:ital,wght@1,400&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F7F9F4;color:#1a1a1a;font-size:15px}
 .login-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.25rem;gap:14px;background:#F7F9F4}
 .login-card{background:#fff;border-radius:18px;padding:1.75rem;width:100%;max-width:360px;border:0.5px solid #e0e0e0}
 .login-logo{text-align:center;margin-bottom:4px}
-.logo-text{font-family:'Dancing Script',cursive;font-size:28px;font-weight:600;line-height:1}
+.logo-text{font-family:'Dancing Script',cursive;font-size:28px;font-weight:600;line-height:1;display:inline-block}
 .logo-text .lm{color:#7DC242}.logo-text .la{color:#29ABE2}
 .login-sub{text-align:center;font-size:10px;color:#bbb;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:20px}
 .role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem}
@@ -1447,18 +1244,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .role-btn span{font-size:13px;font-weight:600;display:block;color:#1a1a1a}
 .role-btn small{font-size:11px;color:#aaa}
 .topbar{background:#fff;border-bottom:1px solid #eee;padding:0 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;height:54px;overflow:hidden}
-.topbar-logo{font-family:'Dancing Script',cursive;font-size:22px;font-weight:600;position:relative;z-index:2;line-height:1}
+.topbar-logo{font-family:'Dancing Script',cursive;font-size:22px;font-weight:600;line-height:1;position:relative;z-index:2}
 .topbar-logo .lm{color:#7DC242}.topbar-logo .la{color:#29ABE2}
-.topbar-right{display:flex;gap:8px;align-items:center;position:relative;z-index:2}
 .topbar-botanical{position:absolute;top:0;left:0;width:100%;height:54px;pointer-events:none;z-index:1}
+.topbar-right{display:flex;gap:8px;align-items:center;position:relative;z-index:2}
 .nav-bar{background:#fff;border-bottom:1px solid #eee;display:flex;padding:0 20px;overflow-x:auto}
 .nav-item{padding:11px 16px;font-size:13px;cursor:pointer;color:#aaa;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:all .15s;font-weight:500}
 .nav-item.active{color:#7DC242;border-bottom-color:#7DC242}
 .nav-item i{font-size:15px}
 .content{padding:20px;max-width:800px;margin:0 auto;position:relative}
-.body-botanical{position:absolute;top:0;right:0;width:220px;height:100%;pointer-events:none;z-index:0}
-.body-botanical-left{position:absolute;bottom:0;left:0;width:90px;height:180px;pointer-events:none;z-index:0}
-.content-inner{position:relative;z-index:1}
 .alert{padding:10px 14px;border-radius:10px;margin-bottom:12px;display:flex;align-items:flex-start;gap:10px;font-size:13px}
 .alert i{font-size:16px;flex-shrink:0;margin-top:1px}
 .alert-red{background:#FEF2F2;border:1px solid #FECACA;color:#991B1B}
@@ -1491,7 +1285,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .btn-danger{background:#FEF2F2;color:#DC2626;border-color:#FECACA}
 .btn-danger:hover{background:#FEE2E2}
 .btn-sm{padding:5px 12px;font-size:12px}
-.post-card{background:#fff;border:0.5px solid #e8e8e8;border-radius:14px;padding:1rem 1.25rem;margin-bottom:10px;position:relative;overflow:hidden}
+.post-card{background:#fff;border:0.5px solid #e8e8e8;border-radius:14px;padding:1rem 1.25rem;margin-bottom:10px}
 .post-card.overdue{border-left:3px solid #DC2626;border-radius:0 14px 14px 0}
 .post-card.today{border-left:3px solid #F59E0B;border-radius:0 14px 14px 0}
 .post-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px}
