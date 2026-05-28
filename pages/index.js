@@ -908,9 +908,13 @@ function PMPostCard({p, onEdit, onDelete}) {
                 <span className="pm-posted-tag"><i className="ti ti-check" style={{fontSize:11}}></i> Posted by {pl.postedBy}</span>
                 {atTime&&<span style={{fontSize:11,color:"#888"}}>{atTime}</span>}
                 {hasScreenshot&&<a href={`/api/screenshot?postId=${ssPostId}&platform=${encodeURIComponent(ssPlatform)}`} target="_blank" rel="noreferrer"
-                  style={{fontSize:11,color:"#185FA5",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",border:"1px solid #BFDBFE",borderRadius:6,background:"#EBF4FF"}}>
+                  style={{fontSize:11,color:"#0B7AB5",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",border:"1px solid #A8DCF0",borderRadius:6,background:"#E8F6FD"}}>
                   <i className="ti ti-photo" style={{fontSize:12}}></i>Screenshot
                 </a>}
+                <PmScreenshotUpload postId={p.id} platName={pl.name} onDone={(link)=>{
+                  setPosts(posts.map(pp=>pp.id===p.id?{...pp,platforms:pp.platforms.map(pl2=>pl2.name===pl.name?{...pl2,postedAt:(pl2.postedAt?pl2.postedAt.split(" | ")[0]:"")+" | "+link}:pl2)}:pp));
+                  toast("Screenshot updated!");
+                }}/>
               </div>
             : <span className="pm-pending-tag">Not posted yet</span>}
         </div>
@@ -1146,13 +1150,69 @@ function getDayOfYear() {
 }
 
 
+
+function PmScreenshotUpload({postId, platName, onDone}) {
+  const [loading, setLoading] = React.useState(false);
+  const inputRef = React.useRef(null);
+
+  async function handleFile(file) {
+    if(!file || !file.type.startsWith("image/")) return;
+    setLoading(true);
+    try {
+      const data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            const attempts = [{maxW:480,quality:0.5},{maxW:360,quality:0.4},{maxW:280,quality:0.3}];
+            for(const {maxW,quality} of attempts) {
+              const scale = img.width > maxW ? maxW/img.width : 1;
+              const canvas = document.createElement("canvas");
+              canvas.width = Math.round(img.width*scale);
+              canvas.height = Math.round(img.height*scale);
+              canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
+              const b64 = canvas.toDataURL("image/jpeg",quality).split(",")[1];
+              if(b64.length < 36000){resolve(b64);return;}
+            }
+            reject(new Error("Image too large"));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+      const r = await fetch("/api/mark-posted",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({postId,platformName:platName,postedBy:"PM",screenshot:{data,name:file.name.replace(/\.[^.]+$/,".jpg"),mimeType:"image/jpeg"},screenshotOnly:true})
+      }).then(x=>x.json());
+      if(r.ok && r.screenshotLink) onDone(r.screenshotLink);
+      else throw new Error(r.error||"Upload failed");
+    } catch(e) {
+      alert("Error: "+e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <label style={{cursor:"pointer",fontSize:11,color:"#3B6D11",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",border:"1px solid #C0DD97",borderRadius:6,background:"#F3FBE8",whiteSpace:"nowrap"}}
+      title="Replace screenshot">
+      {loading
+        ? <><span className="spinner" style={{width:10,height:10,marginRight:3}}></span>Uploading...</>
+        : <><i className="ti ti-refresh" style={{fontSize:12}}></i>Replace</>
+      }
+      <input ref={inputRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>handleFile(e.target.files[0])} disabled={loading}/>
+    </label>
+  );
+}
+
 function BgBotanical() {
   return (
     <div className="bg-botanical">
       <svg width="100%" height="100%" viewBox="0 0 1440 900" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
         {/* Faded merakiads watermark center */}
-        <text x="720" y="480" textAnchor="middle" fontFamily="Dancing Script,cursive" fontSize="160" fontWeight="600" fill="#7DC242" opacity="0.04" transform="rotate(-15 720 480)">meraki</text>
-        <text x="720" y="630" textAnchor="middle" fontFamily="Dancing Script,cursive" fontSize="160" fontWeight="600" fill="#29ABE2" opacity="0.04" transform="rotate(-15 720 630)">ads</text>
+        <text x="720" y="480" textAnchor="middle" fontFamily="Dancing Script,cursive" fontSize="160" fontWeight="600" fill="#7DC242" opacity="0.12" transform="rotate(-15 720 480)">meraki</text>
+        <text x="720" y="630" textAnchor="middle" fontFamily="Dancing Script,cursive" fontSize="160" fontWeight="600" fill="#29ABE2" opacity="0.12" transform="rotate(-15 720 630)">ads</text>
         {/* Top left cluster */}
         <path d="M -10 120 Q 20 70 70 50 Q 60 90 -10 120 Z" fill="#C5E89A" opacity="0.5"/>
         <path d="M -10 120 Q 40 80 70 50" stroke="#7DC242" strokeWidth="1" fill="none" opacity="0.4"/>
@@ -1315,8 +1375,8 @@ function TopbarBotanical() {
 
 const globalCSS = `
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F7F9F4;color:#1a1a1a;font-size:15px;min-height:100vh}.page-wrap{padding-top:54px}.bg-botanical{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}.bg-content{position:relative;z-index:1}
-.login-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.25rem;gap:14px;background:#F7F9F4}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F2F5EE;color:#1a1a1a;font-size:15px;min-height:100vh}.page-wrap{padding-top:54px}.bg-botanical{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}.bg-content{position:relative;z-index:1}
+.login-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.25rem;gap:14px;background:transparent}
 .login-card{background:#fff;border-radius:18px;padding:1.75rem;width:100%;max-width:360px;border:0.5px solid #e0e0e0}
 .login-logo{text-align:center;margin-bottom:4px}
 .logo-text{font-family:'Dancing Script',cursive;font-size:28px;font-weight:600;line-height:1;display:inline-block}
