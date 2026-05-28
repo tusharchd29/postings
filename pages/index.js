@@ -435,40 +435,40 @@ export default function Home() {
             </div>
           ))}
         </div>
-        {activeTab==="overview" && (
-          <div>
-            <div className="stats-bar">
-              <div style={{maxWidth:800,margin:"0 auto"}}>
-                {ov>0 && <div className="alert alert-red" style={{marginBottom:8}}><i className="ti ti-alert-circle"></i><span><strong>{ov} post{ov>1?"s are":" is"} overdue</strong> — scheduled time has passed and not fully posted.</span></div>}
-                {td>0 && <div className="alert alert-amber" style={{marginBottom:8}}><i className="ti ti-clock"></i><span><strong>{td} post{td>1?"s":""} due today</strong> — keep an eye on these.</span></div>}
-                {!ov&&!td && <div className="alert alert-green" style={{marginBottom:8}}><i className="ti ti-circle-check"></i><span>All clear — no overdue or pending posts for today.</span></div>}
-                <div className="stats-grid">
-                  <div className="stat-card"><div className="stat-num" style={{color:"#DC2626"}}>{ov}</div><div className="stat-label">Overdue</div></div>
-                  <div className="stat-card"><div className="stat-num" style={{color:"#D97706"}}>{td}</div><div className="stat-label">Due today</div></div>
-                  <div className="stat-card"><div className="stat-num">{up}</div><div className="stat-label">Upcoming</div></div>
-                  <div className="stat-card"><div className="stat-num" style={{color:"#16A34A"}}>{dn}</div><div className="stat-label">Posted</div></div>
-                </div>
+                <div className="stats-bar">
+          <div style={{maxWidth:800,margin:"0 auto"}}>
+            {ov>0 && <div className="alert alert-red" style={{marginBottom:6}}><i className="ti ti-alert-circle"></i><span><strong>{ov} overdue</strong> — past scheduled time.</span></div>}
+            {!ov&&td>0 && <div className="alert alert-amber" style={{marginBottom:6}}><i className="ti ti-clock"></i><span><strong>{td} due today</strong> — keep an eye on these.</span></div>}
+            <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+              <div style={{display:"flex",gap:8,flex:"0 0 auto"}}>
+                <div className="stat-card"><div className="stat-num" style={{color:"#DC2626"}}>{ov}</div><div className="stat-label">Overdue</div></div>
+                <div className="stat-card"><div className="stat-num" style={{color:"#D97706"}}>{td}</div><div className="stat-label">Due today</div></div>
+                <div className="stat-card"><div className="stat-num">{up}</div><div className="stat-label">Upcoming</div></div>
+                <div className="stat-card"><div className="stat-num" style={{color:"#16A34A"}}>{dn}</div><div className="stat-label">Posted</div></div>
               </div>
-                <div className="filter-row" style={{marginTop:10,marginBottom:0}}>
-                  <select value={pmFilterClient} onChange={e=>setPmFilterClient(e.target.value)}>
-                    <option value="">All clients</option>
-                    {clientNames.map(n=><option key={n}>{n}</option>)}
-                  </select>
-                  <select value={pmFilterStatus} onChange={e=>setPmFilterStatus(e.target.value)}>
-                    <option value="">All posts</option>
-                    <option value="overdue">Overdue</option>
-                    <option value="today">Due today</option>
-                    <option value="upcoming">Upcoming</option>
-                    <option value="done">All posted</option>
-                  </select>
-                  <input type="date" value={globalDateFrom} onChange={e=>setGlobalDateFrom(e.target.value)}
-                    style={{padding:"5px 8px",fontSize:12,border:"1px solid #ddd",borderRadius:7,background:"#fff",color:"#1a1a1a"}} title="From date"/>
-                  <span style={{fontSize:12,color:"#888",alignSelf:"center"}}>→</span>
-                  <input type="date" value={globalDateTo} onChange={e=>setGlobalDateTo(e.target.value)}
-                    style={{padding:"5px 8px",fontSize:12,border:"1px solid #ddd",borderRadius:7,background:"#fff",color:"#1a1a1a"}} title="To date"/>
-                  {(globalDateFrom||globalDateTo) && <button className="btn btn-sm" onClick={()=>{setGlobalDateFrom("");setGlobalDateTo("");}}>Clear</button>}
-                </div>
+              <div className="filter-row" style={{flex:1}}>
+                <select value={pmFilterClient} onChange={e=>setPmFilterClient(e.target.value)}>
+                  <option value="">All clients</option>
+                  {clientNames.map(n=><option key={n}>{n}</option>)}
+                </select>
+                <select value={pmFilterStatus} onChange={e=>setPmFilterStatus(e.target.value)}>
+                  <option value="">All posts</option>
+                  <option value="overdue">Overdue</option>
+                  <option value="today">Due today</option>
+                  <option value="upcoming">Upcoming</option>
+                  <option value="done">All posted</option>
+                </select>
+                <input type="date" value={globalDateFrom} onChange={e=>setGlobalDateFrom(e.target.value)}
+                  style={{padding:"4px 7px",fontSize:11,border:"0.5px solid #ddd",borderRadius:6,background:"#fff",color:"#1a1a1a"}} title="From date"/>
+                <span style={{fontSize:11,color:"#aaa"}}>→</span>
+                <input type="date" value={globalDateTo} onChange={e=>setGlobalDateTo(e.target.value)}
+                  style={{padding:"4px 7px",fontSize:11,border:"0.5px solid #ddd",borderRadius:6,background:"#fff",color:"#1a1a1a"}} title="To date"/>
+                {(globalDateFrom||globalDateTo) && <button className="btn btn-sm" onClick={()=>{setGlobalDateFrom("");setGlobalDateTo("");}}>Clear</button>}
+              </div>
             </div>
+          </div>
+        </div>
+{activeTab==="overview" && (
           <div className="content">
             {loading ? <div className="loading"><span className="spinner"></span>Loading posts...</div> :
               groups.some(g=>g.items.length) ? groups.map(g=> g.items.length ? (
@@ -482,7 +482,6 @@ export default function Home() {
               ) : null) :
               <div className="empty"><i className="ti ti-calendar-off"></i>No posts match this filter.</div>
             }
-          </div>
           </div>
         )}
         {activeTab==="new" && (
@@ -1360,7 +1359,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .role-btn:hover{border-color:#7DC242}.role-btn.selected{border-color:#7DC242;background:#F3FBE8}
 .role-btn i{font-size:24px;display:block;margin-bottom:6px;color:#ccc}.role-btn.selected i{color:#7DC242}
 .role-btn span{font-size:13px;font-weight:600;display:block;color:#1a1a1a}.role-btn small{font-size:11px;color:#aaa}
-.topbar{background:#fff;border-bottom:1px solid #eee;padding:0 20px;display:flex;align-items:center;justify-content:space-between;position:fixed;top:0;left:0;right:0;z-index:100;height:54px;overflow:hidden}.stats-bar{position:sticky;top:54px;z-index:98;background:#F2F5EE;padding:12px 20px;border-bottom:0.5px solid #e0e0e0}
+.topbar{background:#fff;border-bottom:1px solid #eee;padding:0 20px;display:flex;align-items:center;justify-content:space-between;position:fixed;top:0;left:0;right:0;z-index:100;height:54px;overflow:hidden}.stats-bar{position:sticky;top:54px;z-index:98;background:rgba(242,245,238,0.97);padding:10px 20px;border-bottom:0.5px solid #d0d8c8}
 .topbar-logo{font-family:'Dancing Script',cursive;font-size:22px;font-weight:600;line-height:1;position:relative;z-index:2}
 .topbar-logo .lm{color:#7DC242}.topbar-logo .la{color:#29ABE2}
 .topbar-botanical{position:absolute;top:0;left:0;width:100%;height:54px;pointer-events:none;z-index:1}
