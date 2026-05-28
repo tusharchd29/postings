@@ -90,6 +90,10 @@ export default function Home() {
   const [sowSaving, setSowSaving] = useState(false);
   const [sowAddMode, setSowAddMode] = useState(false);
 
+  // ── Screenshot approval state
+  const [pendingApprovals, setPendingApprovals] = useState([]);
+  const [approvalDrawerOpen, setApprovalDrawerOpen] = useState(false);
+
   // ── Global date range filter (applies to Overview + Posting Team)
   const [globalDateFrom, setGlobalDateFrom] = useState("");
   const [globalDateTo, setGlobalDateTo] = useState("");
@@ -106,6 +110,31 @@ export default function Home() {
       if(pr.ok) setPosts(pr.posts);
     } catch(e) { toast("Failed to load data."); }
     setLoading(false);
+  }
+
+  async function loadPendingApprovals() {
+    try {
+      const r = await fetch("/api/approve-screenshot").then(x=>x.json());
+      if(r.ok) {
+        setPendingApprovals(r.approvals||[]);
+        // Annotate posts with ssPending flag
+        const pendingMap = {};
+        (r.approvals||[]).forEach(a=>{ pendingMap[a.postId+":"+a.platformName] = true; });
+        setPosts(prev=>prev.map(p=>({...p, platforms:p.platforms.map(pl=>({
+          ...pl, ssPending: !!pendingMap[p.id+":"+pl.name]
+        }))})));
+      }
+    } catch {}
+  }
+
+  async function approveScreenshot(postId, platformName) {
+    try {
+      const r = await fetch("/api/approve-screenshot",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({postId,platformName})}).then(x=>x.json());
+      if(!r.ok){ toast("Error: "+r.error); return; }
+      setPendingApprovals(prev=>prev.filter(a=>!(a.postId===postId&&a.platformName===platformName)));
+      toast(`${platformName} screenshot approved!`);
+    } catch { toast("Failed to approve."); }
   }
 
   async function loadSOW() {
@@ -171,6 +200,7 @@ export default function Home() {
       if(!r.ok){ setLoginErr("Incorrect PIN. Please try again."); setLoginLoading(false); return; }
       setRole(r.role); setPin(""); setLoginLoading(false);
       await loadAll();
+      if(r.role==="pm") { try { const ar=await fetch("/api/approve-screenshot").then(x=>x.json()); if(ar.ok) { setPendingApprovals(ar.approvals||[]); const pm={}; (ar.approvals||[]).forEach(a=>{pm[a.postId+":"+a.platformName]=true;}); setPosts(prev=>prev.map(p=>({...p,platforms:p.platforms.map(pl=>({...pl,ssPending:!!pm[p.id+":"+pl.name]}))}))); } } catch {} }
     } catch { setLoginErr("Connection error. Please try again."); setLoginLoading(false); }
   }
 
@@ -423,7 +453,12 @@ export default function Home() {
           <TopbarBotanical/>
           <span className="topbar-logo"><span className="lm">meraki</span><span className="la">ads</span></span>
           <div className="topbar-right">
-            <button className="btn btn-sm" onClick={loadAll}><i className="ti ti-refresh"></i> Refresh</button>
+            {pendingApprovals.length>0&&(
+              <button className="btn btn-sm" onClick={()=>{setApprovalDrawerOpen(true);}} style={{background:"#DC2626",color:"#fff",borderColor:"#DC2626"}}>
+                <i className="ti ti-photo-check"></i> {pendingApprovals.length} pending
+              </button>
+            )}
+            <button className="btn btn-sm" onClick={()=>{loadAll();loadPendingApprovals();}}><i className="ti ti-refresh"></i> Refresh</button>
             <button className="btn btn-sm" onClick={logout}><i className="ti ti-logout"></i> Sign out</button>
           </div>
         </div>
@@ -784,6 +819,57 @@ export default function Home() {
           </div>
         )}
 
+        {approvalDrawerOpen&&(
+          <div style={{position:"fixed",inset:0,zIndex:200,display:"flex"}} onClick={e=>e.target===e.currentTarget&&setApprovalDrawerOpen(false)}>
+            <div style={{marginLeft:"auto",width:"100%",maxWidth:420,background:"#fff",height:"100%",boxShadow:"-4px 0 24px rgba(0,0,0,0.12)",display:"flex",flexDirection:"column",overflowY:"auto"}}>
+              <div style={{padding:"16px 20px",borderBottom:"1px solid #eee",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,background:"#fff",zIndex:1}}>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <i className="ti ti-photo-check" style={{fontSize:16,color:"#DC2626"}}></i>
+                  <span style={{fontWeight:600,fontSize:15}}>Screenshot approvals</span>
+                  <span style={{background:"#FEF2F2",color:"#DC2626",fontSize:11,fontWeight:600,padding:"2px 8px",borderRadius:20}}>{pendingApprovals.length}</span>
+                </div>
+                <button className="btn btn-sm" onClick={()=>setApprovalDrawerOpen(false)}><i className="ti ti-x"></i></button>
+              </div>
+              <div style={{padding:16,flex:1}}>
+                {pendingApprovals.length===0
+                  ? <div className="empty"><i className="ti ti-circle-check"></i>No pending approvals.</div>
+                  : pendingApprovals.map((a,idx)=>(
+                    <div key={idx} style={{background:"#fafafa",border:"0.5px solid #e8e8e8",borderRadius:12,padding:14,marginBottom:12}}>
+                      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}>
+                        <i className={`ti ${{"Facebook":"ti-brand-facebook","Instagram":"ti-brand-instagram","LinkedIn":"ti-brand-linkedin","YouTube":"ti-brand-youtube","TikTok":"ti-brand-tiktok","X / Twitter":"ti-brand-x"}[a.platformName]||"ti-device-mobile"}`} style={{fontSize:14}}></i>
+                        <span style={{fontWeight:600,fontSize:13}}>{a.client}</span>
+                        <span style={{fontSize:12,color:"#888"}}>· {a.platformName}</span>
+                      </div>
+                      <div style={{fontSize:12,color:"#555",marginBottom:10}}>{a.postTitle}</div>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+                        <div>
+                          <div style={{fontSize:10,color:"#aaa",marginBottom:4,textTransform:"uppercase",letterSpacing:".04em"}}>Current</div>
+                          <div style={{borderRadius:8,overflow:"hidden",border:"0.5px solid #e5e5e5",background:"#fff8f0",height:90,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                            {a.oldBase64
+                              ? <img src={`data:image/jpeg;base64,${a.oldBase64}`} alt="current" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                              : <span style={{fontSize:11,color:"#aaa"}}>No screenshot</span>}
+                          </div>
+                        </div>
+                        <div>
+                          <div style={{fontSize:10,color:"#aaa",marginBottom:4,textTransform:"uppercase",letterSpacing:".04em"}}>New (pending)</div>
+                          <div style={{borderRadius:8,overflow:"hidden",border:"0.5px solid #C0DD97",background:"#f0fdf4",height:90,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                            {a.newBase64
+                              ? <img src={`data:image/jpeg;base64,${a.newBase64}`} alt="new" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                              : <span style={{fontSize:11,color:"#aaa"}}>No preview</span>}
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{fontSize:10,color:"#aaa",marginBottom:10}}>Requested: {a.uploadedAt}</div>
+                      <button className="btn btn-primary btn-sm" style={{width:"100%",justifyContent:"center"}} onClick={()=>approveScreenshot(a.postId,a.platformName)}>
+                        <i className="ti ti-check"></i> Approve — use new screenshot
+                      </button>
+                    </div>
+                  ))
+                }
+              </div>
+            </div>
+          </div>
+        )}
         <Toast msg={toastMsg} show={toastShow}/>
       </>
     );
@@ -809,7 +895,12 @@ export default function Home() {
           <TopbarBotanical/>
           <span className="topbar-logo"><span className="lm">meraki</span><span className="la">ads</span></span>
           <div className="topbar-right">
-            <button className="btn btn-sm" onClick={loadAll}><i className="ti ti-refresh"></i> Refresh</button>
+            {pendingApprovals.length>0&&(
+              <button className="btn btn-sm" onClick={()=>{setApprovalDrawerOpen(true);}} style={{background:"#DC2626",color:"#fff",borderColor:"#DC2626"}}>
+                <i className="ti ti-photo-check"></i> {pendingApprovals.length} pending
+              </button>
+            )}
+            <button className="btn btn-sm" onClick={()=>{loadAll();loadPendingApprovals();}}><i className="ti ti-refresh"></i> Refresh</button>
             <button className="btn btn-sm" onClick={logout}><i className="ti ti-logout"></i> Sign out</button>
           </div>
         </div>
@@ -839,7 +930,7 @@ export default function Home() {
           </div>
           <div className="content">
           {loading ? <div className="loading"><span className="spinner"></span>Loading posts...</div> :
-            filtered.length ? filtered.map(p=><PostingCard key={p.id} p={p} onMark={markPlatform}/>) :
+            filtered.length ? filtered.map(p=><PostingCard key={p.id} p={p} onMark={markPlatform} setPosts={setPosts}/>) :
             <div className="empty"><i className="ti ti-circle-check"></i>All caught up! Nothing pending.</div>
           }
           </div>
@@ -889,10 +980,15 @@ function PMPostCard({p, onEdit, onDelete}) {
             <span style={{fontSize:13,fontWeight:500}}>{pl.name}</span>
           </div>
           {pl.posted
-            ? <div style={{display:"flex",alignItems:"center",gap:8}}>
+            ? <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                {pl.ssPending
+                  ? <span style={{fontSize:11,background:"#FFFBEB",color:"#92400E",border:"1px solid #FDE68A",padding:"2px 10px",borderRadius:20,display:"flex",alignItems:"center",gap:4}}>
+                      <i className="ti ti-clock" style={{fontSize:11}}></i>SS replacement pending
+                    </span>
+                  : null}
                 <span className="pm-posted-tag"><i className="ti ti-check" style={{fontSize:11}}></i> Posted by {pl.postedBy}</span>
                 {atTime&&<span style={{fontSize:11,color:"#888"}}>{atTime}</span>}
-                {hasScreenshot&&<a href={`/api/screenshot?postId=${ssPostId}&platform=${encodeURIComponent(ssPlatform)}`} target="_blank" rel="noreferrer"
+                {hasScreenshot&&!pl.ssPending&&<a href={`/api/screenshot?postId=${ssPostId}&platform=${encodeURIComponent(ssPlatform)}`} target="_blank" rel="noreferrer"
                   style={{fontSize:11,color:"#0B7AB5",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",border:"1px solid #A8DCF0",borderRadius:6,background:"#E8F6FD"}}>
                   <i className="ti ti-photo" style={{fontSize:12}}></i>Screenshot
                 </a>}
@@ -914,7 +1010,7 @@ function PMPostCard({p, onEdit, onDelete}) {
   );
 }
 
-function PlatformRow({pl, i, p, names, onMark}) {
+function PlatformRow({pl, i, p, names, onMark, setPosts}) {
   const [ssFile, setSsFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [pasting, setPasting] = useState(false);
@@ -955,12 +1051,23 @@ function PlatformRow({pl, i, p, names, onMark}) {
         <span style={{fontSize:14}}>{pl.name}</span>
       </div>
       {pl.posted
-        ? <div style={{display:"flex",alignItems:"center",gap:6,marginLeft:"auto"}}>
-            <span className="posted-by-tag"><i className="ti ti-check" style={{fontSize:12}}></i>{pl.postedBy}</span>
-            {hasScreenshot && <a href={`/api/screenshot?postId=${ssPostId}&platform=${encodeURIComponent(ssPlatform)}`} target="_blank" rel="noreferrer"
-              style={{fontSize:11,color:"#185FA5",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",border:"1px solid #BFDBFE",borderRadius:6,background:"#EBF4FF"}}>
-              <i className="ti ti-photo" style={{fontSize:12}}></i>SS
-            </a>}
+        ? <div style={{display:"flex",alignItems:"center",gap:6,marginLeft:"auto",flexWrap:"wrap",justifyContent:"flex-end"}}>
+            {pl.ssPending
+              ? <span style={{fontSize:11,background:"#FFFBEB",color:"#92400E",border:"1px solid #FDE68A",padding:"2px 10px",borderRadius:20,display:"flex",alignItems:"center",gap:4}}>
+                  <i className="ti ti-clock" style={{fontSize:11}}></i>Replacement pending PM
+                </span>
+              : <>
+                  <span className="posted-by-tag"><i className="ti ti-check" style={{fontSize:12}}></i>{pl.postedBy}</span>
+                  {hasScreenshot && <a href={`/api/screenshot?postId=${ssPostId}&platform=${encodeURIComponent(ssPlatform)}`} target="_blank" rel="noreferrer"
+                    style={{fontSize:11,color:"#185FA5",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",border:"1px solid #BFDBFE",borderRadius:6,background:"#EBF4FF"}}>
+                    <i className="ti ti-photo" style={{fontSize:12}}></i>SS
+                  </a>}
+                  <PostingReplaceSSButton postId={p.id} platName={pl.name} onRequested={()=>{
+                    setPosts(ps=>ps.map(pp=>pp.id===p.id?{...pp,platforms:pp.platforms.map(pl2=>pl2.name===pl.name?{...pl2,ssPending:true}:pl2)}:pp));
+                    toast("Replacement requested — awaiting PM approval.");
+                  }}/>
+                </>
+            }
           </div>
         : <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:5,flexShrink:0}}>
             <div style={{display:"flex",gap:5,alignItems:"center"}}>
@@ -995,7 +1102,7 @@ function PlatformRow({pl, i, p, names, onMark}) {
   );
 }
 
-function PostingCard({p, onMark}) {
+function PostingCard({p, onMark, setPosts}) {
   const s=getStatus(p);
   const [names, setNames] = useState({});
 
@@ -1017,7 +1124,7 @@ function PostingCard({p, onMark}) {
       <div className="divider"></div>
       <div className="sub-label">Mark as posted</div>
       {p.platforms.map((pl,i)=>(
-        <PlatformRow key={pl.name} pl={pl} i={i} p={p} names={names} onMark={onMark}/>
+        <PlatformRow key={pl.name} pl={pl} i={i} p={p} names={names} onMark={onMark} setPosts={setPosts}/>
       ))}
       {s!=="done"&&(
         <div className="name-row">
@@ -1342,6 +1449,126 @@ function TopbarBotanical() {
       <ellipse cx="762" cy="33" rx="4" ry="2.5" fill="#FAC775" opacity="0.45" transform="rotate(-30 762 33)"/>
       <ellipse cx="774" cy="33" rx="4" ry="2.5" fill="#FAC775" opacity="0.45" transform="rotate(30 774 33)"/>
     </svg>
+  );
+}
+
+
+// ── POSTING TEAM REPLACE SS BUTTON ───────────────────────────
+function PostingReplaceSSButton({postId, platName, onRequested}) {
+  const [loading, setLoading] = useState(false);
+  const [ssFile, setSsFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [expanded, setExpanded] = useState(false);
+  const pasteRef = useRef(null);
+  const [pasting, setPasting] = useState(false);
+
+  function handleFile(file) {
+    if(!file || !file.type.startsWith("image/")) return;
+    setSsFile(file);
+    const reader = new FileReader();
+    reader.onload = e => setPreview(e.target.result);
+    reader.readAsDataURL(file);
+  }
+
+  function handlePaste(e) {
+    const items = e.clipboardData?.items;
+    if(!items) return;
+    for(const item of items) {
+      if(item.type.startsWith("image/")) { handleFile(item.getAsFile()); break; }
+    }
+  }
+
+  async function submitReplacement() {
+    if(!ssFile) return;
+    setLoading(true);
+    try {
+      const data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            const attempts = [{maxW:480,quality:0.5},{maxW:360,quality:0.4},{maxW:280,quality:0.3}];
+            for(const {maxW,quality} of attempts) {
+              const scale = img.width > maxW ? maxW/img.width : 1;
+              const canvas = document.createElement("canvas");
+              canvas.width = Math.round(img.width*scale);
+              canvas.height = Math.round(img.height*scale);
+              canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
+              const b64 = canvas.toDataURL("image/jpeg",quality).split(",")[1];
+              if(b64.length < 36000){resolve(b64);return;}
+            }
+            reject(new Error("Image too large to compress."));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(ssFile);
+      });
+      const r = await fetch("/api/mark-posted",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({postId,platformName:platName,postedBy:"Posting Team",
+          screenshot:{data,name:ssFile.name.replace(/\.[^.]+$/,".jpg"),mimeType:"image/jpeg"},
+          replacementRequest:true})
+      }).then(x=>x.json());
+      if(r.ok) { onRequested(); setExpanded(false); setSsFile(null); setPreview(null); }
+      else throw new Error(r.error||"Upload failed");
+    } catch(e) {
+      alert("Error: "+e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if(!expanded) return (
+    <button onClick={()=>setExpanded(true)}
+      style={{fontSize:11,color:"#D97706",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",
+        border:"1px solid #FDE68A",borderRadius:6,background:"#FFFBEB",cursor:"pointer",whiteSpace:"nowrap"}}>
+      <i className="ti ti-refresh" style={{fontSize:12}}></i>Replace SS
+    </button>
+  );
+
+  return (
+    <div style={{width:"100%",marginTop:8,background:"#FFFBEB",border:"1px solid #FDE68A",borderRadius:8,padding:10}}>
+      <div style={{fontSize:12,fontWeight:500,color:"#92400E",marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <span><i className="ti ti-refresh" style={{fontSize:12,marginRight:4}}></i>Replace screenshot</span>
+        <button onClick={()=>{setExpanded(false);setSsFile(null);setPreview(null);}}
+          style={{background:"none",border:"none",cursor:"pointer",color:"#92400E",fontSize:13}}><i className="ti ti-x"></i></button>
+      </div>
+      <div style={{fontSize:11,color:"#92400E",background:"#fff8e1",border:"1px solid #FDE68A",borderRadius:6,padding:"6px 8px",marginBottom:8}}>
+        <i className="ti ti-info-circle" style={{fontSize:11,marginRight:3}}></i>
+        New screenshot will be sent to PM for approval before going live.
+      </div>
+      <div style={{display:"flex",gap:6,marginBottom:preview?8:0}}>
+        <label style={{cursor:"pointer",fontSize:11,color:"#185FA5",display:"flex",alignItems:"center",gap:3,padding:"4px 10px",
+          border:"1px solid #BFDBFE",borderRadius:6,background:"#EBF4FF"}}>
+          <i className="ti ti-upload" style={{fontSize:12}}></i>Upload
+          <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>handleFile(e.target.files[0])}/>
+        </label>
+        <div ref={pasteRef} tabIndex={0} onPaste={handlePaste} onFocus={()=>setPasting(true)} onBlur={()=>setPasting(false)}
+          style={{fontSize:11,padding:"4px 10px",border:`1px solid ${pasting?"#185FA5":"#ddd"}`,borderRadius:6,
+            background:pasting?"#EBF4FF":"#f9f9f9",color:pasting?"#185FA5":"#888",cursor:"pointer",
+            display:"flex",alignItems:"center",gap:3,outline:"none"}}>
+          <i className="ti ti-clipboard" style={{fontSize:12}}></i>
+          {pasting?"Paste now (Ctrl+V)":"Click → Paste"}
+        </div>
+        {ssFile&&<button onClick={()=>{setSsFile(null);setPreview(null);}}
+          style={{background:"none",border:"none",cursor:"pointer",color:"#DC2626",fontSize:13,padding:0}}><i className="ti ti-x"></i></button>}
+      </div>
+      {preview&&(
+        <div style={{marginBottom:8}}>
+          <img src={preview} alt="preview" style={{height:60,width:"auto",maxWidth:160,borderRadius:6,border:"1px solid #e5e5e5",objectFit:"cover",display:"block"}}/>
+          <div style={{fontSize:10,color:"#16A34A",marginTop:3,display:"flex",alignItems:"center",gap:3}}>
+            <i className="ti ti-circle-check" style={{fontSize:11}}></i>Ready to submit
+          </div>
+        </div>
+      )}
+      <button onClick={submitReplacement} disabled={!ssFile||loading}
+        style={{width:"100%",padding:"6px",background:ssFile?"#D97706":"#e0e0e0",color:"#fff",border:"none",
+          borderRadius:6,fontSize:12,cursor:ssFile?"pointer":"not-allowed",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
+        {loading?<><span className="spinner" style={{width:12,height:12,marginRight:4}}></span>Submitting...</>
+          :<><i className="ti ti-send" style={{fontSize:12}}></i>Request replacement</>}
+      </button>
+    </div>
   );
 }
 
