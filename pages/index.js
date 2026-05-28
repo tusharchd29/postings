@@ -435,7 +435,8 @@ export default function Home() {
             </div>
           ))}
         </div>
-                <div className="stats-bar">
+{activeTab==="overview" && (<>
+          <div className="stats-bar">
           <div style={{maxWidth:800,margin:"0 auto"}}>
             {ov>0 && <div className="alert alert-red" style={{marginBottom:6}}><i className="ti ti-alert-circle"></i><span><strong>{ov} overdue</strong> — past scheduled time.</span></div>}
             {!ov&&td>0 && <div className="alert alert-amber" style={{marginBottom:6}}><i className="ti ti-clock"></i><span><strong>{td} due today</strong> — keep an eye on these.</span></div>}
@@ -467,8 +468,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </div>
-{activeTab==="overview" && (
+          </div>
           <div className="content">
             {loading ? <div className="loading"><span className="spinner"></span>Loading posts...</div> :
               groups.some(g=>g.items.length) ? groups.map(g=> g.items.length ? (
@@ -483,7 +483,7 @@ export default function Home() {
               <div className="empty"><i className="ti ti-calendar-off"></i>No posts match this filter.</div>
             }
           </div>
-        )}
+        </>)}
         {activeTab==="new" && (
           <div className="content">
             <div className="section-title">Create new post</div>
