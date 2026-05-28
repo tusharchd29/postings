@@ -360,23 +360,23 @@ export default function Home() {
       </Head>
       <style>{globalCSS}</style>
       <div className="login-wrap">
+        <QuoteCard/>
         <div className="login-card">
-          <h1>Postings</h1>
-          <p>Select your role and enter your PIN to continue.</p>
+          <div className="login-logo"><span className="logo-text"><span className="lm">meraki</span><span className="la">ads</span></span></div>
+          <p className="login-sub">Posting Dashboard</p>
           <div className="role-grid">
             <div className={`role-btn ${selectedRole==="pm"?"selected":""}`} onClick={()=>setSelectedRole("pm")}>
               <i className="ti ti-layout-dashboard"></i>
-              <span>Project Manager</span><small>Create &amp; track posts</small>
+              <span>PM</span><small>Manage posts</small>
             </div>
             <div className={`role-btn ${selectedRole==="posting"?"selected":""}`} onClick={()=>setSelectedRole("posting")}>
               <i className="ti ti-send"></i>
-              <span>Posting Team</span><small>Mark posts as done</small>
+              <span>Posting</span><small>Mark posted</small>
             </div>
           </div>
           <div className="form-group">
-            <label>PIN</label>
             <input type="password" value={pin} onChange={e=>setPin(e.target.value)} placeholder="Enter your PIN"
-              onKeyDown={e=>e.key==="Enter"&&doLogin()}/>
+              onKeyDown={e=>e.key==="Enter"&&doLogin()} style={{textAlign:"center",letterSpacing:"4px",fontSize:"16px"}}/>
           </div>
           {loginErr && <div className="err-msg" style={{display:"block"}}>{loginErr}</div>}
           <div style={{marginTop:12}}>
@@ -415,7 +415,6 @@ export default function Home() {
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600&family=Cormorant+Garamond:ital,wght@1,400&display=swap"/></Head>
         <style>{globalCSS}</style>
-
         <div className="topbar">
           <TopbarBotanical/>
           <span className="topbar-logo"><span className="lm">meraki</span><span className="la">ads</span></span>
@@ -1229,7 +1228,7 @@ function TopbarBotanical() {
 
 const globalCSS = `
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F7F9F4;color:#1a1a1a;font-size:15px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F7F9F4;color:#1a1a1a;font-size:15px}.page-wrap{padding-top:54px}
 .login-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.25rem;gap:14px;background:#F7F9F4}
 .login-card{background:#fff;border-radius:18px;padding:1.75rem;width:100%;max-width:360px;border:0.5px solid #e0e0e0}
 .login-logo{text-align:center;margin-bottom:4px}
@@ -1241,12 +1240,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .role-btn:hover{border-color:#7DC242}.role-btn.selected{border-color:#7DC242;background:#F3FBE8}
 .role-btn i{font-size:24px;display:block;margin-bottom:6px;color:#ccc}.role-btn.selected i{color:#7DC242}
 .role-btn span{font-size:13px;font-weight:600;display:block;color:#1a1a1a}.role-btn small{font-size:11px;color:#aaa}
-.topbar{background:#fff;border-bottom:1px solid #eee;padding:0 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;height:54px;overflow:hidden}
+.topbar{background:#fff;border-bottom:1px solid #eee;padding:0 20px;display:flex;align-items:center;justify-content:space-between;position:fixed;top:0;left:0;right:0;z-index:100;height:54px;overflow:hidden}
 .topbar-logo{font-family:'Dancing Script',cursive;font-size:22px;font-weight:600;line-height:1;position:relative;z-index:2}
 .topbar-logo .lm{color:#7DC242}.topbar-logo .la{color:#29ABE2}
 .topbar-botanical{position:absolute;top:0;left:0;width:100%;height:54px;pointer-events:none;z-index:1}
 .topbar-right{display:flex;gap:8px;align-items:center;position:relative;z-index:2}
-.nav-bar{background:#fff;border-bottom:1px solid #eee;display:flex;padding:0 20px;overflow-x:auto}
+.nav-bar{background:#fff;border-bottom:1px solid #eee;display:flex;padding:0 20px;overflow-x:auto;position:sticky;top:54px;z-index:99}
 .nav-item{padding:11px 16px;font-size:13px;cursor:pointer;color:#aaa;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:all .15s;font-weight:500}
 .nav-item.active{color:#7DC242;border-bottom-color:#7DC242}.nav-item i{font-size:15px}
 .content{padding:20px;max-width:800px;margin:0 auto}
