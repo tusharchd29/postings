@@ -260,10 +260,22 @@ export default function Home() {
     if(screenshotFile) {
       const data = await new Promise((resolve) => {
         const reader = new FileReader();
-        reader.onload = e => resolve(e.target.result.split(",")[1]);
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            const MAX_W = 600;
+            const scale = img.width > MAX_W ? MAX_W / img.width : 1;
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL("image/jpeg", 0.6).split(",")[1]);
+          };
+          img.src = e.target.result;
+        };
         reader.readAsDataURL(screenshotFile);
       });
-      screenshot = { data, name: screenshotFile.name, mimeType: screenshotFile.type, clientName };
+      screenshot = { data, name: screenshotFile.name.replace(/\.[^.]+$/, ".jpg"), mimeType: "image/jpeg", clientName };
     }
     try {
       const r = await fetch("/api/mark-posted",{method:"POST",headers:{"Content-Type":"application/json"},
