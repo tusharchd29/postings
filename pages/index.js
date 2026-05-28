@@ -1131,7 +1131,9 @@ function SOWEditForm({row, setRow, onSave, onCancel, saving, isNew}) {
 }
 
 function Toast({msg, show}) {
-  return <div className="toast" style={{display:show?"block":"none"}}>{msg}</div
+  return <div className="toast" style={{display:show?"block":"none"}}>{msg}</div>;
+}
+
 // ── BOTANICAL SVG COMPONENTS ────────────────────────────────
 function TopbarBotanical() {
   return (
