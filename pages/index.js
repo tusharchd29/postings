@@ -116,12 +116,19 @@ export default function Home() {
     try {
       const r = await fetch("/api/approve-screenshot").then(x=>x.json());
       if(r.ok) {
-        setPendingApprovals(r.approvals||[]);
-        // Annotate posts with ssPending flag
-        const pendingMap = {};
-        (r.approvals||[]).forEach(a=>{ pendingMap[a.postId+":"+a.platformName] = true; });
+        const all = r.approvals||[];
+        // Only show pending ones in the PM drawer
+        setPendingApprovals(all.filter(a=>a.status==="pending"));
+        // Annotate posts: ssPending (amber) vs ssDeclined (red+comment)
+        const pendingMap = {}, declinedMap = {};
+        all.forEach(a=>{
+          if(a.status==="pending") pendingMap[a.postId+":"+a.platformName] = true;
+          if(a.status==="rejected") declinedMap[a.postId+":"+a.platformName] = a.comment||"No reason given";
+        });
         setPosts(prev=>prev.map(p=>({...p, platforms:p.platforms.map(pl=>({
-          ...pl, ssPending: !!pendingMap[p.id+":"+pl.name]
+          ...pl,
+          ssPending: !!pendingMap[p.id+":"+pl.name],
+          ssDeclined: declinedMap[p.id+":"+pl.name]||null,
         }))})));
       }
     } catch {}
@@ -133,8 +140,20 @@ export default function Home() {
         body:JSON.stringify({postId,platformName})}).then(x=>x.json());
       if(!r.ok){ toast("Error: "+r.error); return; }
       setPendingApprovals(prev=>prev.filter(a=>!(a.postId===postId&&a.platformName===platformName)));
+      setPosts(prev=>prev.map(p=>({...p,platforms:p.platforms.map(pl=>p.id===postId&&pl.name===platformName?{...pl,ssPending:false,ssDeclined:null}:pl)})));
       toast(`${platformName} screenshot approved!`);
     } catch { toast("Failed to approve."); }
+  }
+
+  async function rejectScreenshot(postId, platformName, comment) {
+    try {
+      const r = await fetch("/api/approve-screenshot",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({postId,platformName,action:"reject",comment})}).then(x=>x.json());
+      if(!r.ok){ toast("Error: "+r.error); return; }
+      setPendingApprovals(prev=>prev.filter(a=>!(a.postId===postId&&a.platformName===platformName)));
+      setPosts(prev=>prev.map(p=>({...p,platforms:p.platforms.map(pl=>p.id===postId&&pl.name===platformName?{...pl,ssPending:false,ssDeclined:comment||"Declined by PM"}:pl)})));
+      toast(`${platformName} screenshot declined.`);
+    } catch { toast("Failed to decline."); }
   }
 
   async function loadSOW() {
@@ -200,7 +219,7 @@ export default function Home() {
       if(!r.ok){ setLoginErr("Incorrect PIN. Please try again."); setLoginLoading(false); return; }
       setRole(r.role); setPin(""); setLoginLoading(false);
       await loadAll();
-      if(r.role==="pm") { try { const ar=await fetch("/api/approve-screenshot").then(x=>x.json()); if(ar.ok) { setPendingApprovals(ar.approvals||[]); const pm={}; (ar.approvals||[]).forEach(a=>{pm[a.postId+":"+a.platformName]=true;}); setPosts(prev=>prev.map(p=>({...p,platforms:p.platforms.map(pl=>({...pl,ssPending:!!pm[p.id+":"+pl.name]}))}))); } } catch {} }
+      if(r.role==="pm") { try { const ar=await fetch("/api/approve-screenshot").then(x=>x.json()); if(ar.ok) { const all=ar.approvals||[]; setPendingApprovals(all.filter(a=>a.status==="pending")); const pm={},dm={}; all.forEach(a=>{ if(a.status==="pending") pm[a.postId+":"+a.platformName]=true; if(a.status==="rejected") dm[a.postId+":"+a.platformName]=a.comment||"No reason given"; }); setPosts(prev=>prev.map(p=>({...p,platforms:p.platforms.map(pl=>({...pl,ssPending:!!pm[p.id+":"+pl.name],ssDeclined:dm[p.id+":"+pl.name]||null}))}))); } } catch {} }
     } catch { setLoginErr("Connection error. Please try again."); setLoginLoading(false); }
   }
 
@@ -860,9 +879,12 @@ export default function Home() {
                         </div>
                       </div>
                       <div style={{fontSize:10,color:"#aaa",marginBottom:10}}>Requested: {a.uploadedAt}</div>
-                      <button className="btn btn-primary btn-sm" style={{width:"100%",justifyContent:"center"}} onClick={()=>approveScreenshot(a.postId,a.platformName)}>
-                        <i className="ti ti-check"></i> Approve — use new screenshot
-                      </button>
+                      <ApproveDeclineButtons
+                        postId={a.postId}
+                        platformName={a.platformName}
+                        onApprove={()=>approveScreenshot(a.postId,a.platformName)}
+                        onDecline={(comment)=>rejectScreenshot(a.postId,a.platformName,comment)}
+                      />
                     </div>
                   ))
                 }
@@ -1056,6 +1078,20 @@ function PlatformRow({pl, i, p, names, onMark, setPosts, toast}) {
               ? <span style={{fontSize:11,background:"#FFFBEB",color:"#92400E",border:"1px solid #FDE68A",padding:"2px 10px",borderRadius:20,display:"flex",alignItems:"center",gap:4}}>
                   <i className="ti ti-clock" style={{fontSize:11}}></i>Replacement pending PM
                 </span>
+              : pl.ssDeclined
+              ? <div style={{width:"100%",marginTop:6,background:"#FEF2F2",border:"1.5px solid #FCA5A5",borderRadius:8,padding:"8px 12px"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+                    <i className="ti ti-x" style={{fontSize:13,color:"#DC2626"}}></i>
+                    <span style={{fontSize:12,fontWeight:700,color:"#DC2626"}}>Screenshot replacement declined</span>
+                  </div>
+                  <div style={{fontSize:11,color:"#7F1D1D",marginBottom:8,lineHeight:1.5}}>
+                    <span style={{fontWeight:600}}>PM&apos;s note: </span>{pl.ssDeclined}
+                  </div>
+                  <PostingReplaceSSButton postId={p.id} platName={pl.name} label="Re-submit replacement" onRequested={()=>{
+                    setPosts(ps=>ps.map(pp=>pp.id===p.id?{...pp,platforms:pp.platforms.map(pl2=>pl2.name===pl.name?{...pl2,ssPending:true,ssDeclined:null}:pl2)}:pp));
+                    toast("Replacement re-submitted — awaiting PM approval.");
+                  }}/>
+                </div>
               : <>
                   <span className="posted-by-tag"><i className="ti ti-check" style={{fontSize:12}}></i>{pl.postedBy}</span>
                   {hasScreenshot && <a href={`/api/screenshot?postId=${ssPostId}&platform=${encodeURIComponent(ssPlatform)}`} target="_blank" rel="noreferrer"
@@ -1454,7 +1490,45 @@ function TopbarBotanical() {
 
 
 // ── POSTING TEAM REPLACE SS BUTTON ───────────────────────────
-function PostingReplaceSSButton({postId, platName, onRequested}) {
+function ApproveDeclineButtons({postId, platformName, onApprove, onDecline}) {
+  const [declining, setDeclining] = React.useState(false);
+  const [comment, setComment] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+
+  if(!declining) return (
+    <div style={{display:"flex",gap:6}}>
+      <button className="btn btn-primary btn-sm" style={{flex:1,justifyContent:"center"}} onClick={async()=>{setLoading(true);await onApprove();setLoading(false);}}>
+        {loading?<i className="ti ti-loader-2" style={{animation:"spin 1s linear infinite"}}></i>:<i className="ti ti-check"></i>} Approve
+      </button>
+      <button className="btn btn-sm" style={{flex:1,justifyContent:"center",background:"#FEF2F2",color:"#DC2626",border:"1px solid #FECACA"}} onClick={()=>setDeclining(true)}>
+        <i className="ti ti-x"></i> Decline
+      </button>
+    </div>
+  );
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:6}}>
+      <textarea
+        value={comment}
+        onChange={e=>setComment(e.target.value)}
+        placeholder="Reason for declining (required)..."
+        style={{width:"100%",fontSize:11,borderRadius:6,border:"1.5px solid #FECACA",padding:"6px 8px",resize:"vertical",minHeight:56,outline:"none",fontFamily:"inherit",boxSizing:"border-box"}}
+        autoFocus
+      />
+      <div style={{display:"flex",gap:6}}>
+        <button className="btn btn-sm" style={{flex:1,justifyContent:"center",background:"#FEF2F2",color:"#DC2626",border:"1px solid #FECACA",fontWeight:600}}
+          disabled={!comment.trim()||loading}
+          onClick={async()=>{if(!comment.trim()) return;setLoading(true);await onDecline(comment.trim());setLoading(false);setDeclining(false);setComment("");}}>
+          {loading?<i className="ti ti-loader-2" style={{animation:"spin 1s linear infinite"}}></i>:<i className="ti ti-x"></i>} Confirm decline
+        </button>
+        <button className="btn btn-sm" style={{flex:1,justifyContent:"center"}} onClick={()=>{setDeclining(false);setComment("");}}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PostingReplaceSSButton({postId, platName, onRequested, label}) {
   const [loading, setLoading] = useState(false);
   const [ssFile, setSsFile] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -1523,7 +1597,7 @@ function PostingReplaceSSButton({postId, platName, onRequested}) {
     <button onClick={()=>setExpanded(true)}
       style={{fontSize:11,color:"#D97706",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",
         border:"1px solid #FDE68A",borderRadius:6,background:"#FFFBEB",cursor:"pointer",whiteSpace:"nowrap"}}>
-      <i className="ti ti-refresh" style={{fontSize:12}}></i>Replace SS
+      <i className="ti ti-refresh" style={{fontSize:12}}></i>{label||"Replace SS"}
     </button>
   );
 
