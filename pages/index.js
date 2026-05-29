@@ -219,7 +219,8 @@ export default function Home() {
       if(!r.ok){ setLoginErr("Incorrect PIN. Please try again."); setLoginLoading(false); return; }
       setRole(r.role); setPin(""); setLoginLoading(false);
       await loadAll();
-      if(r.role==="pm") { try { const ar=await fetch("/api/approve-screenshot").then(x=>x.json()); if(ar.ok) { const all=ar.approvals||[]; setPendingApprovals(all.filter(a=>a.status==="pending")); const pm={},dm={}; all.forEach(a=>{ if(a.status==="pending") pm[a.postId+":"+a.platformName]=true; if(a.status==="rejected") dm[a.postId+":"+a.platformName]=a.comment||"No reason given"; }); setPosts(prev=>prev.map(p=>({...p,platforms:p.platforms.map(pl=>({...pl,ssPending:!!pm[p.id+":"+pl.name],ssDeclined:dm[p.id+":"+pl.name]||null}))}))); } } catch {} }
+      // Load declined/pending for BOTH roles — posting team needs ssDeclined, PM needs pending count
+      try { const ar=await fetch("/api/approve-screenshot").then(x=>x.json()); if(ar.ok) { const all=ar.approvals||[]; setPendingApprovals(all.filter(a=>a.status==="pending")); const pm={},dm={}; all.forEach(a=>{ if(a.status==="pending") pm[a.postId+":"+a.platformName]=true; if(a.status==="rejected") dm[a.postId+":"+a.platformName]=a.comment||"No reason given"; }); setPosts(prev=>prev.map(p=>({...p,platforms:p.platforms.map(pl=>({...pl,ssPending:!!pm[p.id+":"+pl.name],ssDeclined:dm[p.id+":"+pl.name]||null}))}))); } } catch {}
     } catch { setLoginErr("Connection error. Please try again."); setLoginLoading(false); }
   }
 
